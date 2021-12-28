@@ -17,3 +17,8 @@ EnumWithMethods.three.enumMethod()
 ClassWithMethods.classStaticMethod()
 let aClass = ClassWithMethods()
 aClass.classMethod()
+struct StructConfirmingToAProtocol: AProtocol {
+    func protocolMethod() {}
+}
+let anExistential: AProtocol = StructConfirmingToAProtocol()
+print(anExistential)

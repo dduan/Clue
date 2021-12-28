@@ -23,6 +23,7 @@ public enum ClueEngine {
         public let storeQuery: StoreQuery
         public let usrQuery: USRQuery
         public let referenceQuery: ReferenceQuery
+        public let definition: SymbolOccurrence
         public let occurrences: [SymbolOccurrence]
     }
 
@@ -46,7 +47,7 @@ public enum ClueEngine {
     }
 
     /// Find definitions, among them, find matching modules and types if any
-    static func inferReferenceQuerySymbol(db: IndexStoreDB, _ query: USRQuery) throws -> Symbol {
+    static func inferReferenceQuerySymbol(db: IndexStoreDB, _ query: USRQuery) throws -> SymbolOccurrence {
         let defs = db
             .canonicalOccurrences(
                 containing: query.symbol,
@@ -64,7 +65,7 @@ public enum ClueEngine {
             throw Failure.symbolNotFound
         }
 
-        return defs[0].symbol
+        return defs[0]
     }
 
     static func inferReferenceQueryRole(db: IndexStoreDB, fromUSR usr: String) throws -> ReferenceQuery {
@@ -94,38 +95,53 @@ public enum ClueEngine {
 
     public static func execute(_ query: Query) throws -> Finding {
         let db = try loadIndexStore(query.store)
-        let referenceQuery = try self.buildReferenceQuery(db: db, from: query)
+        let (referenceQuery, definition) = try self.buildReferenceQuery(db: db, from: query)
         let result = referenceQuery
             .usrs
             .flatMap { usr in db.occurrences(ofUSR: usr, roles: referenceQuery.role) }
             .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
-            .filter { $0.roles.isDisjoint(with: referenceQuery.negativeRole) }
+            .filter { $0.roles.isDisjoint(with: referenceQuery.negativeRole.union(.definition)) }
 
         return .init(
             storeQuery: query.store,
             usrQuery: query.usr,
             referenceQuery: referenceQuery,
+            definition: definition,
             occurrences: result
         )
     }
 
-    static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws -> ReferenceQuery {
+    static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws -> (ReferenceQuery, SymbolOccurrence) {
         if query.reference.usrs.isEmpty {
-            let inferredSymbol = try self.inferReferenceQuerySymbol(db: db, query.usr)
-            let inferredReference = try self.inferReferenceQueryRole(db: db, from: inferredSymbol)
+            let definition = try self.inferReferenceQuerySymbol(db: db, query.usr)
+            let inferredReference = try self.inferReferenceQueryRole(db: db, from: definition.symbol)
             let negativeRole = query.reference.negativeRole.isEmpty
                 ? inferredReference.negativeRole
                 : query.reference.negativeRole
-            return .init(
-                usrs: inferredReference.usrs,
-                role: query.reference.role.isEmpty ? inferredReference.role : query.reference.role,
-                negativeRole: negativeRole
+            return (
+                .init(
+                    usrs: inferredReference.usrs,
+                    role: query.reference.role.isEmpty ? inferredReference.role : query.reference.role,
+                    negativeRole: negativeRole
+                ),
+                definition
             )
         } else {
-            return .init(
-                usrs: query.reference.usrs,
-                role: query.reference.role.isEmpty ? .all : query.reference.role,
-                negativeRole: query.reference.negativeRole.isEmpty ? [] : query.reference.negativeRole
+            let defs = query
+                .reference
+                .usrs
+                .flatMap { db.occurrences(ofUSR: $0, roles: .definition) }
+            if defs.count > 1 {
+                throw Failure.ambiguousSymbol(defs)
+            }
+
+            return (
+                .init(
+                    usrs: query.reference.usrs,
+                    role: query.reference.role.isEmpty ? .all : query.reference.role,
+                    negativeRole: query.reference.negativeRole.isEmpty ? [] : query.reference.negativeRole
+                ),
+                defs[0]
             )
         }
     }

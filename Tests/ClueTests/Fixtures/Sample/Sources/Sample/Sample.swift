@@ -33,3 +33,7 @@ public final class ClassWithMethods {
     public static func classStaticMethod() {}
     public func classMethod() {}
 }
+
+public protocol AProtocol {
+    func protocolMethod()
+}

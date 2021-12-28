@@ -21,4 +21,10 @@ func f() {
     ClassWithMethods.classStaticMethod()
     let aClass = ClassWithMethods()
     aClass.classMethod()
+    let anExistential: AProtocol = StructConfirmingToAProtocol()
+    print(anExistential)
+}
+
+struct StructConfirmingToAProtocol: AProtocol {
+    func protocolMethod() {}
 }
