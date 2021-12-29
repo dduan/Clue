@@ -33,14 +33,14 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    func verifySimpleQuery(symbolName: String, role: SymbolRole? = nil, negativeRole: SymbolRole = [],
+    func verifySimpleQuery(symbolName: String, role: ReferenceQuery.Role = .empty,
                            expectedDefinition: (SampleProject.File, UInt, UInt),
                            expectedPaths: [(SampleProject.File, UInt, UInt)],
                            file: StaticString = #file, line: UInt = #line) throws
     {
         try self.verifyQuery(
             usr: .init(symbol: symbolName, module: nil, symbolKind: nil),
-            reference: role.map { ReferenceQuery(usrs: [], role: $0, negativeRole: negativeRole) } ?? .empty,
+            reference: ReferenceQuery(usrs: [], role: role),
             expectedDefinition: expectedDefinition,
             expectedPaths: expectedPaths,
             file: file,
@@ -97,7 +97,7 @@ final class ClueTests: XCTestCase {
     func testClassInheritance() throws {
         try verifySimpleQuery(
             symbolName: "BaseClass",
-            role: [.baseOf],
+            role: .preset(.inheritanceOnly),
             expectedDefinition: (.sample, 13, 12),
             expectedPaths: [
                 (.sampleUsage, 11, 27),
@@ -109,8 +109,7 @@ final class ClueTests: XCTestCase {
     func testClassInstantiation() throws {
         try verifySimpleQuery(
             symbolName: "BaseClass",
-            role: .reference,
-            negativeRole: .baseOf,
+            role: .preset(.instanceOnly),
             expectedDefinition: (.sample, 13, 12),
             expectedPaths: [
                 (.sampleUsage, 14, 11),
@@ -222,7 +221,7 @@ final class ClueTests: XCTestCase {
     func testProtocolConfirmation() throws {
         try verifySimpleQuery(
             symbolName: "AProtocol",
-            role: .baseOf,
+            role: .preset(.inheritanceOnly),
             expectedDefinition: (.sample, 37, 17),
             expectedPaths: [
                 (.sampleUsage, 28, 37),
@@ -234,8 +233,7 @@ final class ClueTests: XCTestCase {
     func testProtocolReference() throws {
         try verifySimpleQuery(
             symbolName: "AProtocol",
-            role: .all,
-            negativeRole: .baseOf,
+            role: .preset(.instanceOnly),
             expectedDefinition: (.sample, 37, 17),
             expectedPaths: [
                 (.sampleUsage, 24, 24),
