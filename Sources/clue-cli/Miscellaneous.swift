@@ -8,7 +8,6 @@ import func Glibc.fputs
 import func Glibc.exit
 import var Glibc.EXIT_FAILURE
 import var Glibc.stderr
-import Darwin
 #endif
 
 func bail(_ message: String) -> Never {

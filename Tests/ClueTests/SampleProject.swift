@@ -12,7 +12,7 @@ func bash(_ command: String, caller: String) throws {
     task.waitUntilExit()
 }
 
-let libIndexStore = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib"
+let libIndexStore = try! defaultPathToLibIndexStore()
 
 enum SampleProject {
     static let samplePath = try! Path("\(#filePath)")
