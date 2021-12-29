@@ -2,8 +2,8 @@ SHELL = /bin/bash
 ifeq ($(shell uname),Darwin)
 EXTRA_SWIFT_FLAGS = "--disable-sandbox"
 else
-SWIFT_TOOLCHAIN = "$(shell dirname $(shell swift -print-target-info | grep runtimeResourcePath | cut -f 2 -d ':' | cut -f 2 -d '"'))/../../"
-EXTRA_SWIFT_FLAGS = "-Xcxx -I${SWIFT_TOOLCHAIN}/usr/lib/swift -Xcxx -I${SWIFT_TOOLCHAIN}/usr/lib/swift/Block"
+SWIFT_TOOLCHAIN = "$(shell dirname $(shell swift -print-target-info | grep runtimeResourcePath | cut -f 2 -d ':' | cut -f 2 -d '"'))"
+EXTRA_SWIFT_FLAGS = -Xcxx -I${SWIFT_TOOLCHAIN}/swift -Xcxx -I${SWIFT_TOOLCHAIN}/swift/Block
 endif
 
 .PHONY: test
