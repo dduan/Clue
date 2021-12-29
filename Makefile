@@ -6,6 +6,9 @@ test:
 
 .PHONY: build
 build:
-	@which swift
+ifeq ($(shell uname),Darwin)
 	@swift build --configuration release --disable-sandbox -Xswiftc -warnings-as-errors
+else
+	@swift xxx
+endif
 	@mv .build/release/clue-cli .build/release/clue
