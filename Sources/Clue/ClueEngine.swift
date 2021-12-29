@@ -85,11 +85,10 @@ public enum ClueEngine {
                     db.canonicalOccurrences(ofName: "getter:\(symbol.name)").first?.symbol.usr,
                     db.canonicalOccurrences(ofName: "setter:\(symbol.name)").first?.symbol.usr,
                 ].compactMap { $0 },
-                role: [.definition, .call],
-                negativeRole: []
+                role: .specific(role: [.definition, .call], negativeRole: [])
             )
         default:
-            return .init(usrs: [symbol.usr], role: .all, negativeRole: [])
+            return .init(usrs: [symbol.usr], role: .specific(role: .all))
         }
     }
 
@@ -98,7 +97,7 @@ public enum ClueEngine {
         let (referenceQuery, definition) = try self.buildReferenceQuery(db: db, from: query)
         let result = referenceQuery
             .usrs
-            .flatMap { usr in db.occurrences(ofUSR: usr, roles: referenceQuery.role) }
+            .flatMap { usr in db.occurrences(ofUSR: usr, roles: referenceQuery.positiveRole) }
             .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
             .filter { $0.roles.isDisjoint(with: referenceQuery.negativeRole.union(.definition)) }
 
@@ -111,7 +110,9 @@ public enum ClueEngine {
         )
     }
 
-    static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws -> (ReferenceQuery, SymbolOccurrence) {
+    static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws
+        -> (ReferenceQuery, SymbolOccurrence)
+    {
         if query.reference.usrs.isEmpty {
             let definition = try self.inferReferenceQuerySymbol(db: db, query.usr)
             let inferredReference = try self.inferReferenceQueryRole(db: db, from: definition.symbol)
@@ -121,8 +122,12 @@ public enum ClueEngine {
             return (
                 .init(
                     usrs: inferredReference.usrs,
-                    role: query.reference.role.isEmpty ? inferredReference.role : query.reference.role,
-                    negativeRole: negativeRole
+                    role: .specific(
+                        role: query.reference.positiveRole.isEmpty
+                            ? inferredReference.positiveRole
+                            : query.reference.positiveRole,
+                        negativeRole: negativeRole
+                    )
                 ),
                 definition
             )
@@ -138,8 +143,10 @@ public enum ClueEngine {
             return (
                 .init(
                     usrs: query.reference.usrs,
-                    role: query.reference.role.isEmpty ? .all : query.reference.role,
-                    negativeRole: query.reference.negativeRole.isEmpty ? [] : query.reference.negativeRole
+                    role: .specific(
+                        role: query.reference.positiveRole.isEmpty ? .all : query.reference.positiveRole,
+                        negativeRole: query.reference.negativeRole.isEmpty ? [] : query.reference.negativeRole
+                    )
                 ),
                 defs[0]
             )

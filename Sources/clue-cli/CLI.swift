@@ -1,7 +1,5 @@
 import ArgumentParser
 
-// clue --xcode Lyft libIndexStore
-
 struct CLI: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "clue",
@@ -14,7 +12,7 @@ struct CLI: ParsableCommand {
             valueName: "path to libIndexStore"
         )
     )
-    var lib = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib"
+    var lib: String?
 
     @Option(
         help: ArgumentHelp(
@@ -40,14 +38,17 @@ struct CLI: ParsableCommand {
     )
     var swiftpm: String?
 
-    @Flag(help: "Look for read references.")
-    var read = false
+    @Option(help: "Instruct IndexStoreDB to search for symbols with these roles")
+    var roles: [String] = []
 
-    @Flag(help: "Look for write references.")
-    var write = false
+    @Option(help: "Exclude these roles from IndexStoreDB results.")
+    var excludeRoles: [String] = []
 
-    @Flag(help: "Look for definition.")
-    var definition = false
+    @Flag(help: "Filter result for class or protocol consumption only (role = all, excludeRole = baseOf).")
+    var roleReferenceOnly = false
+
+    @Flag(help: "Filter result for class or protocol inheritance/conformance only (role = baseOf).")
+    var roleInheritanceOnly = false
 
     @Argument(help: "Symbol to look for.")
     var symbol: String
