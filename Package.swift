@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Clue",
+    platforms: [.macOS(.v10_13)],
     products: [
         .executable(name: "clue-cli", targets: ["clue-cli"]),
         .library(name: "Clue", targets: ["Clue"])
