@@ -6,10 +6,19 @@ SWIFT_TOOLCHAIN = "$(shell dirname $(shell swift -print-target-info | grep runti
 EXTRA_SWIFT_FLAGS = -Xcxx -I${SWIFT_TOOLCHAIN}/swift -Xcxx -I${SWIFT_TOOLCHAIN}/swift/Block
 endif
 
+define build
+	@swift build --configuration $(1) -Xswiftc -warnings-as-errors ${EXTRA_SWIFT_FLAGS}
+	@cp .build/$(1)/clue-cli .build/$(1)/clue
+endef
+
 .PHONY: test
 test:
 	@swift test ${EXTRA_SWIFT_FLAGS}
 
 .PHONY: build
 build:
-	@swift build --configuration release -Xswiftc -warnings-as-errors ${EXTRA_SWIFT_FLAGS}
+	$(call build,release)
+
+.PHONY: debug
+debug:
+	$(call build,debug)
