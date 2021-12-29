@@ -1,6 +1,6 @@
 import ArgumentParser
 
-struct CLI: ParsableCommand {
+struct Options: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "clue",
         abstract: "Looking for Swift symbol references in a Swift project."
@@ -45,11 +45,22 @@ struct CLI: ParsableCommand {
     var excludeRoles: [String] = []
 
     @Flag(help: "Filter result for class or protocol consumption only (role = all, excludeRole = baseOf).")
-    var roleReferenceOnly = false
+    var roleInstanceOnly = false
 
     @Flag(help: "Filter result for class or protocol inheritance/conformance only (role = baseOf).")
     var roleInheritanceOnly = false
 
+    @Option(help: "Module where `symbol` is defined.")
+    var module: String?
+
+    @Option(help: "Kind of `symbol`.")
+    var symbolKind: String?
+
+    @Option(help: "USRs for the symbols to look for.")
+    var usrs: [String] = []
+
+    // TODO: This should be optional
     @Argument(help: "Symbol to look for.")
     var symbol: String
+
 }
