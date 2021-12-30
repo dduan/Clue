@@ -6,7 +6,7 @@ public enum USRQuery {
     case query(
         symbol: String,
         module: String? = nil,
-        kind: IndexSymbolKind? = nil
-        // TODO: isSystem: Bool = false
+        kind: IndexSymbolKind? = nil,
+        isSystem: Bool
     )
 }
