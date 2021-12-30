@@ -75,29 +75,16 @@ public enum ClueEngine {
         return candidates[0]
     }
 
-    /// Assume no other input, infer what usrs user want from a definition.
-    static func inferQueryFromDefinition(db: IndexStoreDB, definition: Symbol) throws -> ([String], ReferenceRole) {
-        switch definition.kind {
-        case .variable: // TODO: what about properties?
-            return (
-                [
-                    definition.usr,
-                    db.canonicalOccurrences(ofName: "getter:\(definition.name)").first?.symbol.usr,
-                    db.canonicalOccurrences(ofName: "setter:\(definition.name)").first?.symbol.usr,
-                ].compactMap { $0 },
-                .specific(role: [.definition, .call], negativeRole: [])
-            )
-        default:
-            return ([definition.usr], .specific(role: .all))
-        }
-    }
-
     public static func execute(_ query: Query) throws -> Finding {
         // TODO: this is very inefficient for mulitple queries.
         let db = try loadIndexStore(query.store)
-        let (usrs, role, definition) = try self.buildReferenceQuery(db: db, from: query)
-        let result = usrs
-            .flatMap { usr in db.occurrences(ofUSR: usr, roles: role.positive) }
+        let role = ReferenceRole.specific(
+            role: query.role.positive.isEmpty ? .all : query.role.positive,
+            negativeRole: query.role.negative
+        )
+
+        let definition = try self.findDefinition(db: db, from: query.usr)
+        let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.positive)
             .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
             .filter { $0.roles.isDisjoint(with: role.negative.union(.definition)) }
 
@@ -110,47 +97,27 @@ public enum ClueEngine {
         )
     }
 
-    /// Return a list of USRs to search for; a role to search for, and a definition.
-    static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws
-        -> ([String], ReferenceRole, SymbolOccurrence)
-    {
-        switch query.usr {
+    /// Return a definition for the given USR query
+    static func findDefinition(db: IndexStoreDB, from query: USRQuery) throws -> SymbolOccurrence {
+        let definition: SymbolOccurrence
+        switch query {
         case .explict(let usr):
             let candidates = db.occurrences(ofUSR: usr, roles: .definition)
             guard !candidates.isEmpty else {
                 throw Failure.symbolNotFound(byUSR: usr)
             }
 
-            return (
-                [usr],
-                .specific(
-                    role: query.role.positive.isEmpty ? .all : query.role.positive,
-                    negativeRole: query.role.negative.isEmpty ? [] : query.role.negative
-                ),
-                candidates[0]
-            )
-
+            definition = candidates[0]
         case .query(let symbol, let module, let kind, let isSystem):
-            let definition = try self.inferReferenceQuerySymbol(
+            definition = try self.inferReferenceQuerySymbol(
                 db: db,
                 symbolName: symbol,
                 module: module,
                 kind: kind,
                 isSystem: isSystem
             )
-            let (usrs, inferredRole) = try inferQueryFromDefinition(db: db, definition: definition.symbol)
-            return (
-                usrs,
-                .specific(
-                    role: query.role.positive.isEmpty
-                        ? inferredRole.positive
-                        : query.role.positive,
-                    negativeRole: query.role.negative.isEmpty
-                        ? inferredRole.negative
-                        : query.role.negative
-                ),
-                definition
-            )
         }
+
+        return definition
     }
 }
