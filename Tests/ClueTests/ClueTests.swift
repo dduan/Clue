@@ -7,7 +7,7 @@ final class ClueTests: XCTestCase {
         try! SampleProject.prepareFixture()
     }
 
-    func verifyQuery(usr: USRQuery, reference: ReferenceQuery,
+    func verifyQuery(usr: USRQuery, role: ReferenceRole,
                      expectedDefinition: (SampleProject.File, UInt, UInt),
                      expectedPaths: [(SampleProject.File, UInt, UInt)],
                      file: StaticString = #file, line: UInt = #line) throws
@@ -19,7 +19,7 @@ final class ClueTests: XCTestCase {
                     location: .swiftpm(path: "\(SampleProject.samplePath)")
                 ),
                 usr: usr,
-                reference: reference
+                role: role
             )
         )
         result.occurrences.enumerated().forEach { (i, o) in
@@ -33,14 +33,14 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    func verifySimpleQuery(symbolName: String, role: ReferenceQuery.Role = .empty,
+    func verifySimpleQuery(symbolName: String, role: ReferenceRole = .empty,
                            expectedDefinition: (SampleProject.File, UInt, UInt),
                            expectedPaths: [(SampleProject.File, UInt, UInt)],
                            file: StaticString = #file, line: UInt = #line) throws
     {
         try self.verifyQuery(
-            usr: .init(symbol: symbolName, module: nil, symbolKind: nil),
-            reference: ReferenceQuery(usrs: [], role: role),
+            usr: .query(symbol: symbolName),
+            role: role,
             expectedDefinition: expectedDefinition,
             expectedPaths: expectedPaths,
             file: file,
