@@ -1,5 +1,8 @@
 import ArgumentParser
 
+// TODO: There should be a way to run mulitple queries within a single command-line process.
+//       Probably via a input file that deserializes to [ClueEngine.Query].
+
 struct Options: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "clue",
@@ -50,17 +53,15 @@ struct Options: ParsableCommand {
     @Flag(help: "Filter result for class or protocol inheritance/conformance only (role = baseOf).")
     var roleInheritanceOnly = false
 
+    @Option(help: "The USR for the symbol to look for. Cannot be used with `symbol` at the same time.")
+    var usr: String?
+
     @Option(help: "Module where `symbol` is defined.")
     var module: String?
 
     @Option(help: "Kind of `symbol`.")
     var symbolKind: String?
 
-    @Option(help: "USRs for the symbols to look for.")
-    var usrs: [String] = []
-
-    // TODO: This should be optional
-    @Argument(help: "Symbol to look for.")
-    var symbol: String
-
+    @Argument(help: "Name of a symbol to look for. Cannot be used with `usr` at the same time.")
+    var symbol: String?
 }

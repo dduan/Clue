@@ -4,25 +4,26 @@ import Pathos
 public enum ClueEngine {
     public enum Failure: Error {
         case ambiguousSymbol([SymbolOccurrence])
-        case symbolNotFound
+        case symbolNotFound(byName: String)
+        case symbolNotFound(byUSR: String)
     }
 
     public struct Query {
         public let store: StoreQuery
         public let usr: USRQuery
-        public let reference: ReferenceQuery
+        public let role: ReferenceRole
 
-        public init(store: StoreQuery, usr: USRQuery, reference: ReferenceQuery) {
+        public init(store: StoreQuery, usr: USRQuery, role: ReferenceRole) {
             self.store = store
             self.usr = usr
-            self.reference = reference
+            self.role = role
         }
     }
 
     public struct Finding {
         public let storeQuery: StoreQuery
         public let usrQuery: USRQuery
-        public let referenceQuery: ReferenceQuery
+        public let referenceRole: ReferenceRole
         public let definition: SymbolOccurrence
         public let occurrences: [SymbolOccurrence]
     }
@@ -46,109 +47,107 @@ public enum ClueEngine {
         return indexStore
     }
 
-    /// Find definitions, among them, find matching modules and types if any
-    static func inferReferenceQuerySymbol(db: IndexStoreDB, _ query: USRQuery) throws -> SymbolOccurrence {
-        let defs = db
+    /// Find occurence for a definition associated with the symbolName, module, and kind.
+    static func inferReferenceQuerySymbol(
+        db: IndexStoreDB,
+        symbolName: String,
+        module: String?,
+        kind: IndexSymbolKind?
+    ) throws -> SymbolOccurrence {
+        let candidates = db
             .canonicalOccurrences(
-                containing: query.symbol,
+                containing: symbolName,
                 anchorStart: true,
-                anchorEnd: false,
+                anchorEnd: false, // TODO: give user the option to customize this value
                 subsequence: false,
                 ignoreCase: false
             )
             .filter { $0.roles.contains(.definition) }
-            .filter { d in query.module.map { d.symbol.usr.contains($0) } ?? true  }
-            .filter { d in query.symbolKind.map { d.symbol.kind == $0 } ?? true }
-        if defs.count > 1 {
-            throw Failure.ambiguousSymbol(defs)
-        } else if defs.isEmpty {
-            throw Failure.symbolNotFound
+            .filter { d in module.map { d.symbol.usr.contains($0) } ?? true  }
+            .filter { d in kind.map { d.symbol.kind == $0 } ?? true }
+        if candidates.count > 1 {
+            throw Failure.ambiguousSymbol(candidates)
+        } else if candidates.isEmpty {
+            throw Failure.symbolNotFound(byName: symbolName)
         }
 
-        return defs[0]
+        return candidates[0]
     }
 
-    static func inferReferenceQueryRole(db: IndexStoreDB, fromUSR usr: String) throws -> ReferenceQuery {
-        guard let symbol = db.occurrences(ofUSR: usr, roles: .definition).first?.symbol else {
-            throw Failure.symbolNotFound
-        }
-
-        return try self.inferReferenceQueryRole(db: db, from: symbol)
-    }
-
-    static func inferReferenceQueryRole(db: IndexStoreDB, from symbol: Symbol) throws -> ReferenceQuery {
-        switch symbol.kind {
-        case .variable:
-            return .init(
-                usrs: [
-                    symbol.usr,
-                    db.canonicalOccurrences(ofName: "getter:\(symbol.name)").first?.symbol.usr,
-                    db.canonicalOccurrences(ofName: "setter:\(symbol.name)").first?.symbol.usr,
+    /// Assume no other input, infer what usrs user want from a definition.
+    static func inferQueryFromDefinition(db: IndexStoreDB, definition: Symbol) throws -> ([String], ReferenceRole) {
+        switch definition.kind {
+        case .variable: // TODO: what about properties?
+            return (
+                [
+                    definition.usr,
+                    db.canonicalOccurrences(ofName: "getter:\(definition.name)").first?.symbol.usr,
+                    db.canonicalOccurrences(ofName: "setter:\(definition.name)").first?.symbol.usr,
                 ].compactMap { $0 },
-                role: .specific(role: [.definition, .call], negativeRole: [])
+                .specific(role: [.definition, .call], negativeRole: [])
             )
         default:
-            return .init(usrs: [symbol.usr], role: .specific(role: .all))
+            return ([definition.usr], .specific(role: .all))
         }
     }
 
     public static func execute(_ query: Query) throws -> Finding {
+        // TODO: this is very inefficient for mulitple queries.
         let db = try loadIndexStore(query.store)
-        let (referenceQuery, definition) = try self.buildReferenceQuery(db: db, from: query)
-        let result = referenceQuery
-            .usrs
-            .flatMap { usr in db.occurrences(ofUSR: usr, roles: referenceQuery.positiveRole) }
+        let (usrs, role, definition) = try self.buildReferenceQuery(db: db, from: query)
+        let result = usrs
+            .flatMap { usr in db.occurrences(ofUSR: usr, roles: role.positive) }
             .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
-            .filter { $0.roles.isDisjoint(with: referenceQuery.negativeRole.union(.definition)) }
+            .filter { $0.roles.isDisjoint(with: role.negative.union(.definition)) }
 
         return .init(
             storeQuery: query.store,
             usrQuery: query.usr,
-            referenceQuery: referenceQuery,
+            referenceRole: role,
             definition: definition,
             occurrences: result
         )
     }
 
+    /// Return a list of USRs to search for; a role to search for, and a definition.
     static func buildReferenceQuery(db: IndexStoreDB, from query: Query) throws
-        -> (ReferenceQuery, SymbolOccurrence)
+        -> ([String], ReferenceRole, SymbolOccurrence)
     {
-        if query.reference.usrs.isEmpty {
-            let definition = try self.inferReferenceQuerySymbol(db: db, query.usr)
-            let inferredReference = try self.inferReferenceQueryRole(db: db, from: definition.symbol)
-            let negativeRole = query.reference.negativeRole.isEmpty
-                ? inferredReference.negativeRole
-                : query.reference.negativeRole
-            return (
-                .init(
-                    usrs: inferredReference.usrs,
-                    role: .specific(
-                        role: query.reference.positiveRole.isEmpty
-                            ? inferredReference.positiveRole
-                            : query.reference.positiveRole,
-                        negativeRole: negativeRole
-                    )
-                ),
-                definition
-            )
-        } else {
-            let defs = query
-                .reference
-                .usrs
-                .flatMap { db.occurrences(ofUSR: $0, roles: .definition) }
-            if defs.count > 1 {
-                throw Failure.ambiguousSymbol(defs)
+        switch query.usr {
+        case .explict(let usr):
+            let candidates = db.occurrences(ofUSR: usr, roles: .definition)
+            guard !candidates.isEmpty else {
+                throw Failure.symbolNotFound(byUSR: usr)
             }
 
             return (
-                .init(
-                    usrs: query.reference.usrs,
-                    role: .specific(
-                        role: query.reference.positiveRole.isEmpty ? .all : query.reference.positiveRole,
-                        negativeRole: query.reference.negativeRole.isEmpty ? [] : query.reference.negativeRole
-                    )
+                [usr],
+                .specific(
+                    role: query.role.positive.isEmpty ? .all : query.role.positive,
+                    negativeRole: query.role.negative.isEmpty ? [] : query.role.negative
                 ),
-                defs[0]
+                candidates[0]
+            )
+
+        case .query(let symbol, let module, let kind):
+            let definition = try self.inferReferenceQuerySymbol(
+                db: db,
+                symbolName: symbol,
+                module: module,
+                kind: kind
+            )
+            let (usrs, inferredRole) = try inferQueryFromDefinition(db: db, definition: definition.symbol)
+            return (
+                usrs,
+                .specific(
+                    role: query.role.positive.isEmpty
+                        ? inferredRole.positive
+                        : query.role.positive,
+                    negativeRole: query.role.negative.isEmpty
+                        ? inferredRole.negative
+                        : query.role.negative
+                ),
+                definition
             )
         }
     }

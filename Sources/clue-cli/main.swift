@@ -1,20 +1,6 @@
 import Clue
 import IndexStoreDB
 
-do {
-    let r = try Clue.ClueEngine.execute(
-        .init(
-            store: .init(libIndexStore: options.lib ?? (try! defaultPathToLibIndexStore()), location: .swiftpm(path: options.swiftpm ?? "")),
-            usr: .init(symbol: options.symbol, module: nil, symbolKind: nil),
-            reference: .empty
-        )
-    )
-
-    r.occurrences.map { "\($0.location.path):\($0.location.line):\($0.location.utf8Column):\($0.symbol.kind)" }.forEach { print($0) }
-} catch let error {
-    print(error)
-}
-
 let options = Options.parseOrExit()
 
 func libIndexStorePath(from options: Options) -> String {
@@ -44,7 +30,7 @@ func indexStoreLocation(from options: Options) -> StoreQuery.Location {
     }
 }
 
-func referenceQueryRole(from options: Options) -> ReferenceQuery.Role {
+func referenceQueryRole(from options: Options) -> ReferenceRole {
     guard !(options.roleInstanceOnly && options.roleInheritanceOnly) else {
         bail("--role-reference-only and --role-inheritance-only are mutually exclusive.")
     }
@@ -80,6 +66,23 @@ func symbolKindFrom(_ options: Options) -> IndexSymbolKind? {
     }
 }
 
+func usrQueryFrom(_ options: Options) -> USRQuery {
+    switch (options.usr, options.symbol) {
+    case (nil, nil):
+        bail("Please provide either a symbol name or --usr")
+    case let (nil, .some(symbolName)):
+        return .query(
+            symbol: symbolName,
+            module: options.module,
+            kind: symbolKindFrom(options)
+        )
+    case let (.some(usr), nil):
+        return .explict(usr: usr)
+    case _:
+        bail("Symbol name and --usr are mutually exclusive.")
+    }
+}
+
 extension ClueEngine.Query {
     init(_ options: Options) {
         self.init(
@@ -87,15 +90,8 @@ extension ClueEngine.Query {
                 libIndexStore: libIndexStorePath(from: options),
                 location: indexStoreLocation(from: options)
             ),
-            usr: .init(
-                symbol: options.symbol,
-                module: options.module,
-                symbolKind: symbolKindFrom(options)
-            ),
-            reference: .init(
-                usrs: options.usrs,
-                role: referenceQueryRole(from: options)
-            )
+            usr: usrQueryFrom(options),
+            role: referenceQueryRole(from: options)
         )
     }
 }
@@ -103,7 +99,9 @@ extension ClueEngine.Query {
 func main(_ options: Options) {
     do {
         let result = try ClueEngine.execute(.init(options))
-        print(result)
+        for occur in result.occurrences {
+            print(occur.locationString)
+        }
     } catch let error {
         print(error)
     }
