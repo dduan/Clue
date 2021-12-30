@@ -52,7 +52,8 @@ public enum ClueEngine {
         db: IndexStoreDB,
         symbolName: String,
         module: String?,
-        kind: IndexSymbolKind?
+        kind: IndexSymbolKind?,
+        isSystem: Bool
     ) throws -> SymbolOccurrence {
         let candidates = db
             .canonicalOccurrences(
@@ -62,7 +63,7 @@ public enum ClueEngine {
                 subsequence: false,
                 ignoreCase: false
             )
-            .filter { $0.roles.contains(.definition) }
+            .filter { $0.roles.contains(.definition) && $0.location.isSystem == isSystem }
             .filter { d in module.map { d.symbol.usr.contains($0) } ?? true  }
             .filter { d in kind.map { d.symbol.kind == $0 } ?? true }
         if candidates.count > 1 {
@@ -129,12 +130,13 @@ public enum ClueEngine {
                 candidates[0]
             )
 
-        case .query(let symbol, let module, let kind):
+        case .query(let symbol, let module, let kind, let isSystem):
             let definition = try self.inferReferenceQuerySymbol(
                 db: db,
                 symbolName: symbol,
                 module: module,
-                kind: kind
+                kind: kind,
+                isSystem: isSystem
             )
             let (usrs, inferredRole) = try inferQueryFromDefinition(db: db, definition: definition.symbol)
             return (
