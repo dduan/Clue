@@ -22,9 +22,17 @@ final class ClueTests: XCTestCase {
                 role: role
             )
         )
+
+        print("def", result.definition.location, result.definition.roles, result.definition.symbol.kind)
         result.occurrences.enumerated().forEach { (i, o) in
             print(i, o.location, o.roles)
         }
+
+        XCTAssertEqual(
+            result.definition.locationString,
+            "\(expectedDefinition.0.path):\(expectedDefinition.1):\(expectedDefinition.2)"
+        )
+
         XCTAssertEqual(
             Set(result.occurrences.map { $0.locationString }),
             Set(expectedPaths.map { "\($0.path):\($1):\($2)" }),
@@ -241,4 +249,49 @@ final class ClueTests: XCTestCase {
             ]
         )
     }
+
+    func testClassProperties() throws {
+        try verifySimpleQuery(
+            symbolName: "simpleClassProperty",
+            expectedDefinition: (.sample, 43, 16),
+            expectedPaths: [
+                (.sampleUsage, 34, 26),
+                (.sampleUsage, 36, 20),
+                (.sampleCLI, 27, 22),
+                (.sampleCLI, 29, 16),
+                (.sample, 46, 15),
+                (.sample, 47, 15),
+            ]
+        )
+
+    }
+
+    func testStaticClassProperties() throws {
+        try verifySimpleQuery(
+            symbolName: "simpleStaticClassProperty",
+            expectedDefinition: (.sample, 42, 23),
+            expectedPaths: [
+                (.sampleUsage, 35, 31),
+                (.sampleUsage, 37, 25),
+                (.sampleCLI, 28, 27),
+                (.sampleCLI, 30, 21),
+            ]
+        )
+    }
+
+    func testClassPropertiesWithGetterSetter() throws {
+        try verifySimpleQuery(
+            symbolName: "customClassProperty",
+            expectedDefinition: (.sample, 45, 16),
+            expectedPaths: [
+                (.sampleUsage, 38, 20),
+                (.sampleUsage, 39, 26),
+                (.sampleCLI, 31, 16),
+                (.sampleCLI, 32, 22)
+            ]
+        )
+    }
 }
+
+// TODO: test for didSet
+// TODO: test for XYZ.init?

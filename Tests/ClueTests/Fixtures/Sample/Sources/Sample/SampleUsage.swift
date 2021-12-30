@@ -28,3 +28,13 @@ func f() {
 struct StructConfirmingToAProtocol: AProtocol {
     func protocolMethod() {}
 }
+
+func g() {
+    let classWithProps = ClassWithPropreties()
+    print(classWithProps.simpleClassProperty)
+    print(ClassWithPropreties.simpleStaticClassProperty)
+    classWithProps.simpleClassProperty = "hello"
+    ClassWithPropreties.simpleStaticClassProperty = "world"
+    classWithProps.customClassProperty = "hello"
+    print(classWithProps.customClassProperty)
+}
