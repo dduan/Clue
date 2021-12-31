@@ -7,7 +7,7 @@ final class ClueTests: XCTestCase {
         try! SampleProject.prepareFixture()
     }
 
-    func verifyQuery(usr: USRQuery, role: ReferenceRole,
+    func verifyQuery(usr: Query.USR, role: Query.Role,
                      expectedDefinition: (SampleProject.File, UInt, UInt),
                      expectedPaths: [(SampleProject.File, UInt, UInt)],
                      file: StaticString = #file, line: UInt = #line) throws
@@ -41,7 +41,7 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    func verifySimpleQuery(symbolName: String, role: ReferenceRole = .empty,
+    func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
                            expectedDefinition: (SampleProject.File, UInt, UInt),
                            expectedPaths: [(SampleProject.File, UInt, UInt)],
                            file: StaticString = #file, line: UInt = #line) throws

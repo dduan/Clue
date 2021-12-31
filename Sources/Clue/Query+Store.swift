@@ -1,17 +1,20 @@
 import IndexStoreDB
 import Pathos
 
-public struct StoreQuery {
-    let libIndexStore: String
-    let location: Location
+extension Query {
+    public struct Store {
+        let libIndexStore: String
+        let location: Location
 
-    public init(libIndexStore: String, location: StoreQuery.Location) {
-        self.libIndexStore = libIndexStore
-        self.location = location
+        public init(libIndexStore: String, location: Query.Store.Location) {
+            self.libIndexStore = libIndexStore
+            self.location = location
+        }
     }
 }
 
-extension StoreQuery {
+
+extension Query.Store {
     /// Information that leads to a definitive file system location for an index store
     public enum Location {
         /// Name of an Xcode project.
@@ -27,7 +30,7 @@ extension StoreQuery {
     }
 }
 
-extension StoreQuery {
+extension Query.Store {
     public enum Failure: Error {
         case multipleXcodeCandidates([String])
         case missingStoreInXcode(at: String)
@@ -41,7 +44,7 @@ extension StoreQuery {
     }
 }
 
-extension StoreQuery.Location {
+extension Query.Store.Location {
     func resolveIndexStorePath() throws -> String {
         switch self {
         case .store(path: let path):
@@ -53,25 +56,25 @@ extension StoreQuery.Location {
                     .joined(with: "Library", "Developer", "Xcode", "DerivedData", "\(name)*")
                     .glob()
                 if potentialCandiates.count < 1 {
-                    throw StoreQuery.Failure.cannotFindXcode(at: name)
+                    throw Query.Store.Failure.cannotFindXcode(at: name)
                 } else if potentialCandiates.count > 1 {
-                    throw StoreQuery.Failure.multipleXcodeCandidates(potentialCandiates.map { $0.description })
+                    throw Query.Store.Failure.multipleXcodeCandidates(potentialCandiates.map { $0.description })
                 }
 
                 return potentialCandiates[0].description
 
             } catch let error {
-                throw StoreQuery.Failure.filesystemError(error)
+                throw Query.Store.Failure.filesystemError(error)
             }
         case .swiftpm(path: let pathString):
             let project = Path(pathString)
             guard project.exists(followSymlink: true) else {
-                throw StoreQuery.Failure.swiftpmDoesNotExist(at: pathString)
+                throw Query.Store.Failure.swiftpmDoesNotExist(at: pathString)
             }
 
             let store = project.joined(with: ".build", "debug", "index", "store")
             guard store.exists(followSymlink: true) else {
-                throw StoreQuery.Failure.swiftpmWasNotBuiltInDebug(at: store.description)
+                throw Query.Store.Failure.swiftpmWasNotBuiltInDebug(at: store.description)
             }
 
             return store.description
