@@ -65,6 +65,9 @@ struct Options: ParsableCommand {
     @Flag(help: "Whether `symbol` is a system symbol.")
     var isSystem: Bool = false
 
+    @Flag(help: "Treat `symbol` as full name. Note for functions this include parameters like f(a:b:)")
+    var strictSymbolLookup: Bool = false
+
     @Argument(help: "Name of a symbol to look for. Cannot be used with `usr` at the same time.")
     var symbol: String?
 }

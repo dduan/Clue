@@ -7,6 +7,7 @@ public enum USRQuery {
         symbol: String,
         module: String? = nil,
         kind: IndexSymbolKind? = nil,
-        isSystem: Bool
+        isSystem: Bool,
+        strictSymbolLookup: Bool
     )
 }
