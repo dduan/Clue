@@ -37,3 +37,13 @@ public final class ClassWithMethods {
 public protocol AProtocol {
     func protocolMethod()
 }
+
+public final class ClassWithPropreties {
+    public static var simpleStaticClassProperty: String = ""
+    public var simpleClassProperty: String = ""
+    public init () {}
+    public var customClassProperty: String {
+        get { simpleClassProperty }
+        set { simpleClassProperty = newValue }
+    }
+}
