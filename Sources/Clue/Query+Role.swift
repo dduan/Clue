@@ -1,20 +1,22 @@
 import IndexStoreDB
 
-public enum ReferenceRole {
-    public enum Preset {
-        case instanceOnly
-        case inheritanceOnly
-    }
+extension Query {
+    public enum Role {
+        public enum Preset {
+            case instanceOnly
+            case inheritanceOnly
+        }
 
-    case preset(Preset)
-    case specific(role: SymbolRole = [], negativeRole: SymbolRole = [])
+        case preset(Preset)
+        case specific(role: SymbolRole = [], negativeRole: SymbolRole = [])
+    }
 }
 
-extension ReferenceRole {
+extension Query.Role {
     static var empty: Self { .specific() }
 }
 
-extension ReferenceRole {
+extension Query.Role {
     var positive: SymbolRole {
         switch self {
         case .preset(.instanceOnly):

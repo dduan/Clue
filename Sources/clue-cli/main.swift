@@ -15,7 +15,7 @@ func libIndexStorePath(from options: Options) -> String {
     }
 }
 
-func indexStoreLocation(from options: Options) -> StoreQuery.Location {
+func indexStoreLocation(from options: Options) -> Query.Store.Location {
     // TODO: Infer something if all of these are missing?
     guard options.store != nil || options.xcode != nil || options.swiftpm != nil else {
         bail("Please provide value for one of --store, --xcode, or --swiftpm.")
@@ -30,7 +30,7 @@ func indexStoreLocation(from options: Options) -> StoreQuery.Location {
     }
 }
 
-func referenceQueryRole(from options: Options) -> ReferenceRole {
+func referenceQueryRole(from options: Options) -> Query.Role {
     guard !(options.roleInstanceOnly && options.roleInheritanceOnly) else {
         bail("--role-reference-only and --role-inheritance-only are mutually exclusive.")
     }
@@ -66,7 +66,7 @@ func symbolKindFrom(_ options: Options) -> IndexSymbolKind? {
     }
 }
 
-func usrQueryFrom(_ options: Options) -> USRQuery {
+func usrQueryFrom(_ options: Options) -> Query.USR {
     switch (options.usr, options.symbol) {
     case (nil, nil):
         bail("Please provide either a symbol name or --usr")
@@ -85,7 +85,7 @@ func usrQueryFrom(_ options: Options) -> USRQuery {
     }
 }
 
-extension ClueEngine.Query {
+extension Query {
     init(_ options: Options) {
         self.init(
             store: .init(

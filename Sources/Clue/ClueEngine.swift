@@ -8,29 +8,9 @@ public enum ClueEngine {
         case symbolNotFound(byUSR: String)
     }
 
-    public struct Query {
-        public let store: StoreQuery
-        public let usr: USRQuery
-        public let role: ReferenceRole
-
-        public init(store: StoreQuery, usr: USRQuery, role: ReferenceRole) {
-            self.store = store
-            self.usr = usr
-            self.role = role
-        }
-    }
-
-    public struct Finding {
-        public let storeQuery: StoreQuery
-        public let usrQuery: USRQuery
-        public let referenceRole: ReferenceRole
-        public let definition: SymbolOccurrence
-        public let occurrences: [SymbolOccurrence]
-    }
-
-    static func loadIndexStore(_ query: StoreQuery) throws -> IndexStoreDB {
+    static func loadIndexStore(_ query: Query.Store) throws -> IndexStoreDB {
         guard let libIndexStore = try? IndexStoreLibrary(dylibPath: query.libIndexStore) else {
-            throw StoreQuery.Failure.invalidLibIndexStore
+            throw Query.Store.Failure.invalidLibIndexStore
         }
 
         let storePath = try query.location.resolveIndexStorePath()
@@ -39,7 +19,7 @@ public enum ClueEngine {
             databasePath: "\(try Path.makeTemporaryDirectory())",
             library: libIndexStore
         ) else {
-            throw StoreQuery.Failure.invalidIndexStore
+            throw Query.Store.Failure.invalidIndexStore
         }
 
         indexStore.pollForUnitChangesAndWait()
@@ -79,7 +59,7 @@ public enum ClueEngine {
     public static func execute(_ query: Query) throws -> Finding {
         // TODO: this is very inefficient for mulitple queries.
         let db = try loadIndexStore(query.store)
-        let role = ReferenceRole.specific(
+        let role = Query.Role.specific(
             role: query.role.positive.isEmpty ? .all : query.role.positive,
             negativeRole: query.role.negative
         )
@@ -99,7 +79,7 @@ public enum ClueEngine {
     }
 
     /// Return a definition for the given USR query
-    static func findDefinition(db: IndexStoreDB, from query: USRQuery) throws -> SymbolOccurrence {
+    static func findDefinition(db: IndexStoreDB, from query: Query.USR) throws -> SymbolOccurrence {
         let definition: SymbolOccurrence
         switch query {
         case .explict(let usr):
