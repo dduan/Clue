@@ -16,7 +16,6 @@ func libIndexStorePath(from options: Options) -> String {
 }
 
 func indexStoreLocation(from options: Options) -> StoreLocation {
-    // TODO: Infer something if all of these are missing?
     guard options.store != nil || options.xcode != nil || options.swiftpm != nil else {
         bail("Please provide value for one of --store, --xcode, or --swiftpm.")
     }
