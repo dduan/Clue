@@ -101,9 +101,13 @@ func main(_ options: Options) {
         )
 
         let result = try engine.execute(.init(options))
-        for occur in result.occurrences {
-            print(occur.locationString)
+
+        guard let outputFormat = OutputFormat(options.output) else {
+            let candidates = OutputFormat.allCases.map { $0.description }.joined(separator: ", ")
+            bail("Unknown --output value. Please choose from one of \(candidates)")
         }
+
+        print(result.description(for: outputFormat))
     } catch let error {
         print(error)
     }
