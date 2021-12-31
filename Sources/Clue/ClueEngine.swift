@@ -8,15 +8,6 @@ public enum ClueEngine {
         case symbolNotFound(byUSR: String)
     }
 
-
-    public struct Finding {
-        public let storeQuery: Query.Store
-        public let usrQuery: Query.USR
-        public let referenceRole: Query.Role
-        public let definition: SymbolOccurrence
-        public let occurrences: [SymbolOccurrence]
-    }
-
     static func loadIndexStore(_ query: Query.Store) throws -> IndexStoreDB {
         guard let libIndexStore = try? IndexStoreLibrary(dylibPath: query.libIndexStore) else {
             throw Query.Store.Failure.invalidLibIndexStore
