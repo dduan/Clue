@@ -15,7 +15,7 @@ func libIndexStorePath(from options: Options) -> String {
     }
 }
 
-func indexStoreLocation(from options: Options) -> Query.Store.Location {
+func indexStoreLocation(from options: Options) -> StoreLocation {
     // TODO: Infer something if all of these are missing?
     guard options.store != nil || options.xcode != nil || options.swiftpm != nil else {
         bail("Please provide value for one of --store, --xcode, or --swiftpm.")
@@ -88,10 +88,6 @@ func usrQueryFrom(_ options: Options) -> Query.USR {
 extension Query {
     init(_ options: Options) {
         self.init(
-            store: .init(
-                libIndexStore: libIndexStorePath(from: options),
-                location: indexStoreLocation(from: options)
-            ),
             usr: usrQueryFrom(options),
             role: referenceQueryRole(from: options)
         )
@@ -100,7 +96,12 @@ extension Query {
 
 func main(_ options: Options) {
     do {
-        let result = try ClueEngine.execute(.init(options))
+        let engine = try ClueEngine(
+            libIndexStorePath: libIndexStorePath(from: options),
+            indexStoreLocation(from: options)
+        )
+
+        let result = try engine.execute(.init(options))
         for occur in result.occurrences {
             print(occur.locationString)
         }

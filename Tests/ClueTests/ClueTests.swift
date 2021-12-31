@@ -3,25 +3,22 @@ import XCTest
 import IndexStoreDB
 
 final class ClueTests: XCTestCase {
+    static var engine: ClueEngine!
+
     override class func setUp() {
         try! SampleProject.prepareFixture()
+        self.engine = try! ClueEngine(
+            libIndexStorePath: libIndexStore,
+            .swiftpm(path: "\(SampleProject.samplePath)")
+        )
     }
 
-    func verifyQuery(usr: Query.USR, role: Query.Role,
-                     expectedDefinition: (SampleProject.File, UInt, UInt),
-                     expectedPaths: [(SampleProject.File, UInt, UInt)],
-                     file: StaticString = #file, line: UInt = #line) throws
+    static func verifyQuery(usr: Query.USR, role: Query.Role,
+                            expectedDefinition: (SampleProject.File, UInt, UInt),
+                            expectedPaths: [(SampleProject.File, UInt, UInt)],
+                            file: StaticString = #file, line: UInt = #line) throws
     {
-        let result = try ClueEngine.execute(
-            .init(
-                store: .init(
-                    libIndexStore: libIndexStore,
-                    location: .swiftpm(path: "\(SampleProject.samplePath)")
-                ),
-                usr: usr,
-                role: role
-            )
-        )
+        let result = try self.engine.execute(.init(usr: usr, role: role))
 
         print("def", result.definition.location, result.definition.roles, result.definition.symbol.kind)
         result.occurrences.enumerated().forEach { (i, o) in
@@ -41,10 +38,10 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
-                           expectedDefinition: (SampleProject.File, UInt, UInt),
-                           expectedPaths: [(SampleProject.File, UInt, UInt)],
-                           file: StaticString = #file, line: UInt = #line) throws
+    static func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
+                                  expectedDefinition: (SampleProject.File, UInt, UInt),
+                                  expectedPaths: [(SampleProject.File, UInt, UInt)],
+                                  file: StaticString = #file, line: UInt = #line) throws
     {
         try self.verifyQuery(
             usr: .query(symbol: symbolName, isSystem: false, strictSymbolLookup: false),
@@ -57,7 +54,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testSimpleGlobalVariable() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "publicGlobalVariable",
             expectedDefinition: (.sample, 6, 12),
             expectedPaths: [
@@ -68,7 +65,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testStructUsage() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "SampleStruct",
             expectedDefinition: (.sample, 1, 15),
             expectedPaths: [
@@ -79,7 +76,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testEnumUsage() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "SampleEnum",
             expectedDefinition: (.sample, 8, 13),
             expectedPaths: [
@@ -90,7 +87,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassAll() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "BaseClass",
             expectedDefinition: (.sample, 13, 12),
             expectedPaths: [
@@ -103,7 +100,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassInheritance() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "BaseClass",
             role: .preset(.inheritanceOnly),
             expectedDefinition: (.sample, 13, 12),
@@ -115,7 +112,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassInstantiation() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "BaseClass",
             role: .preset(.instanceOnly),
             expectedDefinition: (.sample, 13, 12),
@@ -127,7 +124,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testEnumCase() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "two",
             expectedDefinition: (.sample, 10, 10),
             expectedPaths: [
@@ -137,7 +134,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testPublicFunction() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "publicGlobalFunction",
             expectedDefinition: (.sample, 17, 13),
             expectedPaths: [
@@ -148,7 +145,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testStructStaticMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "structStaticMethod",
             expectedDefinition: (.sample, 21, 24),
             expectedPaths: [
@@ -159,7 +156,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testStructMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "structMethod",
             expectedDefinition: (.sample, 22, 17),
             expectedPaths: [
@@ -170,7 +167,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testEnumStaticMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "enumStaticMethod",
             expectedDefinition: (.sample, 27, 24),
             expectedPaths: [
@@ -181,7 +178,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testEnumMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "enumMethod",
             expectedDefinition: (.sample, 28, 17),
             expectedPaths: [
@@ -192,7 +189,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassStaticMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "classStaticMethod",
             expectedDefinition: (.sample, 33, 24),
             expectedPaths: [
@@ -203,7 +200,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassMethod() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "classMethod",
             expectedDefinition: (.sample, 34, 17),
             expectedPaths: [
@@ -214,7 +211,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testProtocolReferenceAll() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "AProtocol",
             expectedDefinition: (.sample, 37, 17),
             expectedPaths: [
@@ -227,7 +224,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testProtocolConfirmation() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "AProtocol",
             role: .preset(.inheritanceOnly),
             expectedDefinition: (.sample, 37, 17),
@@ -239,7 +236,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testProtocolReference() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "AProtocol",
             role: .preset(.instanceOnly),
             expectedDefinition: (.sample, 37, 17),
@@ -251,7 +248,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassProperties() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "simpleClassProperty",
             expectedDefinition: (.sample, 43, 16),
             expectedPaths: [
@@ -267,7 +264,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testStaticClassProperties() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "simpleStaticClassProperty",
             expectedDefinition: (.sample, 42, 23),
             expectedPaths: [
@@ -280,7 +277,7 @@ final class ClueTests: XCTestCase {
     }
 
     func testClassPropertiesWithGetterSetter() throws {
-        try verifySimpleQuery(
+        try Self.verifySimpleQuery(
             symbolName: "customClassProperty",
             expectedDefinition: (.sample, 45, 16),
             expectedPaths: [
