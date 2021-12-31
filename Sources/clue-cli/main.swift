@@ -75,7 +75,8 @@ func usrQueryFrom(_ options: Options) -> USRQuery {
             symbol: symbolName,
             module: options.module,
             kind: symbolKindFrom(options),
-            isSystem: options.isSystem
+            isSystem: options.isSystem,
+            strictSymbolLookup: options.strictSymbolLookup
         )
     case let (.some(usr), nil):
         return .explict(usr: usr)

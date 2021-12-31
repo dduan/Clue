@@ -47,7 +47,7 @@ final class ClueTests: XCTestCase {
                            file: StaticString = #file, line: UInt = #line) throws
     {
         try self.verifyQuery(
-            usr: .query(symbol: symbolName, isSystem: false),
+            usr: .query(symbol: symbolName, isSystem: false, strictSymbolLookup: false),
             role: role,
             expectedDefinition: expectedDefinition,
             expectedPaths: expectedPaths,

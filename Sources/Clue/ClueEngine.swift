@@ -53,13 +53,14 @@ public enum ClueEngine {
         symbolName: String,
         module: String?,
         kind: IndexSymbolKind?,
-        isSystem: Bool
+        isSystem: Bool,
+        strictSymbolLookup: Bool
     ) throws -> SymbolOccurrence {
         let candidates = db
             .canonicalOccurrences(
                 containing: symbolName,
                 anchorStart: true,
-                anchorEnd: false, // TODO: give user the option to customize this value
+                anchorEnd: strictSymbolLookup,
                 subsequence: false,
                 ignoreCase: false
             )
@@ -108,13 +109,14 @@ public enum ClueEngine {
             }
 
             definition = candidates[0]
-        case .query(let symbol, let module, let kind, let isSystem):
+        case .query(let symbol, let module, let kind, let isSystem, let strictSymbolLookup):
             definition = try self.inferReferenceQuerySymbol(
                 db: db,
                 symbolName: symbol,
                 module: module,
                 kind: kind,
-                isSystem: isSystem
+                isSystem: isSystem,
+                strictSymbolLookup: strictSymbolLookup
             )
         }
 
