@@ -1,4 +1,5 @@
 import ArgumentParser
+import IndexStoreDB
 
 // TODO: There should be a way to run mulitple queries within a single command-line process.
 //       Probably via a input file that deserializes to [ClueEngine.Query].
@@ -71,8 +72,11 @@ struct Options: ParsableCommand {
     @Argument(help: "Name of a symbol to look for. Cannot be used with `usr` at the same time.")
     var symbol: String?
 
-    @Option(help: "Output format. Either 'readable-colored' (default), 'readable', json' or 'csv'")
-    var output: String = "readable-colored"
+    @Option(help: "Output format. Either 'automatic' (default), 'readable', json' or 'csv'")
+    var output: OutputFormat = .automatic
 }
 
 // TODO: some of the strings could be an enum, for which we could benefit from ArgumentParser.
+
+extension OutputFormat: ExpressibleByArgument {}
+extension SymbolRole: ExpressibleByArgument {}

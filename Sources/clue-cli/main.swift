@@ -101,13 +101,7 @@ func main(_ options: Options) {
         )
 
         let result = try engine.execute(.init(options))
-
-        guard let outputFormat = OutputFormat(options.output) else {
-            let candidates = OutputFormat.allCases.map { $0.description }.joined(separator: ", ")
-            bail("Unknown --output value. Please choose from one of \(candidates)")
-        }
-
-        print(result.description(for: outputFormat))
+        print(result.description(for: options.output))
     } catch let error {
         print(error)
     }
