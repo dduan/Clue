@@ -46,8 +46,7 @@ public struct ClueEngine {
         return .init(
             libIndexStore: self.libPath,
             storeLocation: self.storeLocation,
-            usrQuery: query.usr,
-            referenceRole: role,
+            query: .init(usr: query.usr, role: role),
             definition: definition,
             occurrences: result
         )

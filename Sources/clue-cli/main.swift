@@ -101,9 +101,7 @@ func main(_ options: Options) {
         )
 
         let result = try engine.execute(.init(options))
-        for occur in result.occurrences {
-            print(occur.locationString)
-        }
+        print(result.description(for: options.output))
     } catch let error {
         print(error)
     }
