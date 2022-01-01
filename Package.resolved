@@ -2,12 +2,30 @@
   "object": {
     "pins": [
       {
+        "package": "Chalk",
+        "repositoryURL": "https://github.com/mxcl/Chalk",
+        "state": {
+          "branch": null,
+          "revision": "9aa9f348b86db3cf6702a3e43c081ecec80cf3c7",
+          "version": "0.4.0"
+        }
+      },
+      {
         "package": "IndexStoreDB",
         "repositoryURL": "https://github.com/apple/indexstore-db",
         "state": {
           "branch": "swift-5.5.2-RELEASE",
           "revision": "e771994778265c2efe8d33a7ca30adf5f3d2065a",
           "version": null
+        }
+      },
+      {
+        "package": "IsTTY",
+        "repositoryURL": "https://github.com/dduan/IsTTY",
+        "state": {
+          "branch": null,
+          "revision": "7d4bc7788580c99d5a5295bdde96d0264b06d96e",
+          "version": "0.1.0"
         }
       },
       {
