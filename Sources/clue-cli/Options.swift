@@ -76,7 +76,6 @@ struct Options: ParsableCommand {
     var output: OutputFormat = .automatic
 }
 
-// TODO: some of the strings could be an enum, for which we could benefit from ArgumentParser.
-
 extension OutputFormat: ExpressibleByArgument {}
 extension SymbolRole: ExpressibleByArgument {}
+// TODO: readable output variants: "rg -l", or like it but with locations "path/to/file:line:column"
