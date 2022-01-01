@@ -22,6 +22,14 @@ let package = Package(
             url: "https://github.com/apple/swift-argument-parser",
             from: "1.0.2"
         ),
+        .package(
+            url: "https://github.com/mxcl/Chalk",
+            from: "0.4.0"
+        ),
+        .package(
+            url: "https://github.com/dduan/IsTTY",
+            from: "0.1.0"
+        ),
     ],
     targets: [
         .executableTarget(
@@ -29,6 +37,8 @@ let package = Package(
             dependencies: [
                 .target(name: "Clue"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "Chalk", package: "Chalk"),
+                .product(name: "IsTTY", package: "IsTTY"),
             ]
         ),
         .target(

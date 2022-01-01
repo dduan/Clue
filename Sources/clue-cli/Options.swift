@@ -72,7 +72,7 @@ struct Options: ParsableCommand {
     @Argument(help: "Name of a symbol to look for. Cannot be used with `usr` at the same time.")
     var symbol: String?
 
-    @Option(help: "Output format. Either 'automatic' (default), 'readable', json' or 'csv'")
+    @Option(help: "Output format. Either 'automatic' (default), 'readable', 'colored', json' or 'csv'")
     var output: OutputFormat = .automatic
 }
 
