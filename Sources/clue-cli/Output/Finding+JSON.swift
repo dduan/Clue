@@ -1,8 +1,122 @@
 import Clue
+import Foundation
+import IndexStoreDB
 
 extension Finding {
     func json() -> String {
-        "TODO: Implement JSON formatting"
+        return (try? JSONEncoder().encode(self))
+            .flatMap { String(data: $0, encoding: .utf8) }
+            ?? "{}"
     }
 }
 
+extension Finding: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case libIndexStore, storeLocation, query, definition, occurrences
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.libIndexStore, forKey: .libIndexStore)
+        try values.encode(self.storeLocation, forKey: .storeLocation)
+        try values.encode(self.query, forKey: .query)
+        try values.encode(self.definition, forKey: .definition)
+        try values.encode(self.occurrences, forKey: .occurrences)
+    }
+}
+
+extension Query: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case usr, role
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.usr, forKey: .usr)
+        try values.encode(self.role, forKey: .role)
+    }
+}
+
+extension Query.USR: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case type, value, symbol, module, kind, isSystem, strictSymbolLookup
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .explict(let usrString):
+            try values.encode("explict", forKey: .type)
+            try values.encode(usrString, forKey: .value)
+        case let .query(symbol, module, kind, isSystem, strictSymbolLookup):
+            try values.encode(symbol, forKey: .symbol)
+            try values.encode(isSystem, forKey: .isSystem)
+            try values.encode(strictSymbolLookup, forKey: .strictSymbolLookup)
+            if let module = module {
+                try values.encode(module, forKey: .module)
+            }
+
+            if let kind = kind {
+                try values.encode("\(kind)", forKey: .kind)
+            }
+        }
+    }
+}
+
+extension Query.Role: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case include, exclude
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        if self.inclusive == .all {
+            try values.encode("all", forKey: .include)
+        } else {
+            try values.encode("\(self.inclusive)", forKey: .include)
+        }
+
+        try values.encode("\(self.exclusive)", forKey: .exclude)
+    }
+}
+
+extension Symbol: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case usr, name, kind
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.usr, forKey: .usr)
+        try values.encode(self.name, forKey: .name)
+        try values.encode(self.kind.description, forKey: .kind)
+    }
+}
+
+extension SymbolLocation: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case path, moduleName, isSystem, line, utf8Column
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.path, forKey: .path)
+        try values.encode(self.moduleName, forKey: .moduleName)
+        try values.encode(self.isSystem, forKey: .isSystem)
+        try values.encode(self.line, forKey: .line)
+        try values.encode(self.utf8Column, forKey: .utf8Column)
+    }
+}
+
+extension SymbolOccurrence: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case symbol, location, roles
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.symbol, forKey: .symbol)
+        try values.encode(self.location, forKey: .location)
+        try values.encode(self.roles.description, forKey: .roles)
+    }
+}

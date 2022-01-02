@@ -39,17 +39,17 @@ func referenceQueryRole(from options: Options) -> Query.Role {
     } else if options.roleInheritanceOnly {
         return .preset(.inheritanceOnly)
     } else { // add more above if we ever make more presets
-        let (positive, positiveProblems) = SymbolRole.initialize(from: options.roles)
-        if !positiveProblems.isEmpty {
-            bail("Invalid role values: \(positiveProblems.joined(separator: ", "))")
+        let (inclusive, inclusiveProblems) = SymbolRole.initialize(from: options.roles)
+        if !inclusiveProblems.isEmpty {
+            bail("Invalid role values: \(inclusiveProblems.joined(separator: ", "))")
         }
 
-        let (negative, negativeProblems) = SymbolRole.initialize(from: options.excludeRoles)
-        if !negativeProblems.isEmpty {
-            bail("Invalid negative role values: \(negativeProblems.joined(separator: ", "))")
+        let (exclusive, exclusiveProblems) = SymbolRole.initialize(from: options.excludeRoles)
+        if !exclusiveProblems.isEmpty {
+            bail("Invalid exclusive role values: \(exclusiveProblems.joined(separator: ", "))")
         }
 
-        return .specific(role: positive, negativeRole: negative)
+        return .specific(role: inclusive, exclusiveRole: exclusive)
     }
 }
 

@@ -4,7 +4,7 @@ import Pathos
 public struct ClueEngine {
     let db: IndexStoreDB
     let libPath: String
-    let storeLocation: StoreLocation
+    let storePath: String
     /// - throws: StoreInitializationError
     public init(libIndexStorePath: String? = nil, _ storeLocation: StoreLocation) throws {
         let libIndexStore: IndexStoreLibrary
@@ -28,24 +28,24 @@ public struct ClueEngine {
 
         indexStore.pollForUnitChangesAndWait()
 
-        self.storeLocation = storeLocation
+        self.storePath = storePath
         self.db = indexStore
     }
 
     public func execute(_ query: Query) throws -> Finding {
         let role = Query.Role.specific(
-            role: query.role.positive.isEmpty ? .all : query.role.positive,
-            negativeRole: query.role.negative
+            role: query.role.inclusive.isEmpty ? .all : query.role.inclusive,
+            exclusiveRole: query.role.exclusive
         )
 
         let definition = try self.findDefinition(from: query.usr)
-        let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.positive)
+        let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.inclusive)
             .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
-            .filter { $0.roles.isDisjoint(with: role.negative.union(.definition)) }
+            .filter { $0.roles.isDisjoint(with: role.exclusive.union(.definition)) }
 
         return .init(
             libIndexStore: self.libPath,
-            storeLocation: self.storeLocation,
+            storeLocation: self.storePath,
             query: .init(usr: query.usr, role: role),
             definition: definition,
             occurrences: result
