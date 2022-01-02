@@ -8,7 +8,7 @@ extension Query {
         }
 
         case preset(Preset)
-        case specific(role: SymbolRole = [], negativeRole: SymbolRole = [])
+        case specific(role: SymbolRole = [], exclusiveRole: SymbolRole = [])
     }
 }
 
@@ -17,7 +17,7 @@ extension Query.Role {
 }
 
 extension Query.Role {
-    var positive: SymbolRole {
+    public var inclusive: SymbolRole {
         switch self {
         case .preset(.instanceOnly):
             return .all
@@ -28,7 +28,7 @@ extension Query.Role {
         }
     }
 
-    var negative: SymbolRole {
+    public var exclusive: SymbolRole {
         switch self {
         case .preset(.instanceOnly):
             return .baseOf

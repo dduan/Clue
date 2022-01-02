@@ -44,11 +44,11 @@ extension StoreLocation {
             }
 
             let store = project.joined(with: ".build", "debug", "index", "store")
-            guard store.exists(followSymlink: true) else {
+            guard store.exists(followSymlink: true), let absolutePath = try? store.absolute().normal else {
                 throw StoreInitializationError.swiftpmWasNotBuiltInDebug(at: store.description)
             }
 
-            return store.description
+            return absolutePath.description
         }
     }
 }
