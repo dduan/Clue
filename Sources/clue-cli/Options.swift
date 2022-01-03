@@ -72,10 +72,9 @@ struct Options: ParsableCommand {
     @Argument(help: "Name of a symbol to look for. Cannot be used with `usr` at the same time.")
     var symbol: String?
 
-    @Option(help: "Output format. Either 'automatic' (default), 'readable', 'colored', json' or 'csv'")
+    @Option(help: "Output format. Either 'automatic' (default), 'readable', 'colored', json', 'csv' or files")
     var output: OutputFormat = .automatic
 }
 
 extension OutputFormat: ExpressibleByArgument {}
 extension SymbolRole: ExpressibleByArgument {}
-// TODO: readable output variants: "rg -l", or like it but with locations "path/to/file:line:column"
