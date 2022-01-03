@@ -289,5 +289,3 @@ final class ClueTests: XCTestCase {
         )
     }
 }
-
-// TODO: test for XYZ.init?

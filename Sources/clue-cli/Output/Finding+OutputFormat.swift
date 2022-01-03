@@ -5,7 +5,7 @@ extension Finding {
     func description(for format: OutputFormat) -> String {
         switch format {
         case .automatic:
-            return self.readableOutput(colored: IsTTY.standardOutput) // TODO: `false` if not writing to a tty
+            return self.readableOutput(colored: IsTTY.standardOutput)
         case .readable:
             return self.readableOutput(colored: false)
         case .colored:
