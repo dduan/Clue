@@ -6,4 +6,5 @@ enum OutputFormat: String, RawRepresentable {
     case colored
     case csv
     case json
+    case files
 }

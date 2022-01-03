@@ -14,6 +14,8 @@ extension Finding {
             return self.csv()
         case .json:
             return self.json()
+        case .files:
+            return self.filePaths()
         }
     }
 }
