@@ -7,20 +7,30 @@ public struct ClueEngine {
     let storePath: String
     /// - throws: StoreInitializationError
     public init(libIndexStorePath: String? = nil, _ storeLocation: StoreLocation) throws {
-        let libIndexStore: IndexStoreLibrary
         do {
             self.libPath = try libIndexStorePath ?? defaultPathToLibIndexStore()
-            libIndexStore = try IndexStoreLibrary(dylibPath: libPath)
-        } catch let error as StoreInitializationError {
-            throw error
         } catch let error {
-            throw StoreInitializationError.invalidLibIndexStore(error)
+            throw StoreInitializationError.filesystemError(error)
+        }
+
+        let libIndexStore: IndexStoreLibrary
+        do {
+            libIndexStore = try IndexStoreLibrary(dylibPath: libPath)
+        } catch let error {
+            throw StoreInitializationError.invalidLibIndexStore(libPath, error)
         }
 
         let storePath = try storeLocation.resolveIndexStorePath()
+        var tempPath: String = ""
+        do {
+            tempPath = (try Path.makeTemporaryDirectory()).description
+        } catch let error {
+            throw StoreInitializationError.filesystemError(error)
+        }
+
         guard let indexStore = try? IndexStoreDB(
             storePath: storePath,
-            databasePath: "\(try Path.makeTemporaryDirectory())",
+            databasePath: tempPath,
             library: libIndexStore
         ) else {
             throw StoreInitializationError.invalidIndexStore
@@ -75,7 +85,7 @@ public struct ClueEngine {
         if candidates.count > 1 {
             throw Failure.ambiguousSymbol(candidates)
         } else if candidates.isEmpty {
-            throw Failure.symbolNotFound(byName: symbolName)
+            throw Failure.symbolNotFoundByName(symbolName)
         }
 
         return candidates[0]
@@ -88,7 +98,7 @@ public struct ClueEngine {
         case .explict(let usr):
             let candidates = db.occurrences(ofUSR: usr, roles: .definition)
             guard !candidates.isEmpty else {
-                throw Failure.symbolNotFound(byUSR: usr)
+                throw Failure.symbolNotFoundByUSR(usr)
             }
 
             definition = candidates[0]
@@ -109,7 +119,24 @@ public struct ClueEngine {
 extension ClueEngine {
     public enum Failure: Error {
         case ambiguousSymbol([SymbolOccurrence])
-        case symbolNotFound(byName: String)
-        case symbolNotFound(byUSR: String)
+        case symbolNotFoundByName(String)
+        case symbolNotFoundByUSR(String)
+    }
+}
+
+extension ClueEngine.Failure: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .ambiguousSymbol(let occurrences):
+            return "Found more than one symbol matching your input. "
+                + "Pick one from the following with more details (full name, --module, and/or --kind):\n"
+                + occurrences
+                    .map { "\($0.symbol.name) (\($0.symbol.kind)) at \($0.locationString)" }
+                    .joined(separator: "\n")
+        case .symbolNotFoundByName(let name):
+            return "Could not find a symbol matching name '\(name)'"
+        case .symbolNotFoundByUSR(let usr):
+            return "Could not find a symbol matching USR '\(usr)'"
+        }
     }
 }

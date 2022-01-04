@@ -21,22 +21,23 @@ extension StoreLocation {
         case .store(path: let path):
             return path
         case .xcode(projectName: let name):
+            let derivedDataPath = Path
+                .home()
+                .joined(with: "Library", "Developer", "Xcode", "DerivedData", "\(name)*")
+            var potentialCandiates = [Path]()
             do {
-                let potentialCandiates = try Path
-                    .home()
-                    .joined(with: "Library", "Developer", "Xcode", "DerivedData", "\(name)*")
-                    .glob()
-                if potentialCandiates.count < 1 {
-                    throw StoreInitializationError.cannotFindXcode(at: name)
-                } else if potentialCandiates.count > 1 {
-                    throw StoreInitializationError.multipleXcodeCandidates(potentialCandiates.map { $0.description })
-                }
-
-                return potentialCandiates[0].description
-
+                potentialCandiates = try derivedDataPath.glob()
             } catch let error {
                 throw StoreInitializationError.filesystemError(error)
             }
+
+            if potentialCandiates.count < 1 {
+                throw StoreInitializationError.cannotFindXcode(at: derivedDataPath.description)
+            } else if potentialCandiates.count > 1 {
+                throw StoreInitializationError.multipleXcodeCandidates(potentialCandiates.map { $0.description })
+            }
+
+            return potentialCandiates[0].description
         case .swiftpm(path: let pathString):
             let project = Path(pathString)
             guard project.exists(followSymlink: true) else {
