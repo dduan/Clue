@@ -37,7 +37,7 @@ extension StoreLocation {
                 throw StoreInitializationError.multipleXcodeCandidates(potentialCandiates.map { $0.description })
             }
 
-            return potentialCandiates[0].description
+            return potentialCandiates[0].joined(with: "Index", "DataStore").description
         case .swiftpm(path: let pathString):
             let project = Path(pathString)
             guard project.exists(followSymlink: true) else {
