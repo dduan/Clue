@@ -13,17 +13,17 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    static func verifyQuery(usr: Query.USR, role: Query.Role,
-                            expectedDefinition: (SampleProject.File, UInt, UInt),
-                            expectedPaths: [(SampleProject.File, UInt, UInt)],
-                            file: StaticString = #file, line: UInt = #line) throws
+    static func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
+                                  expectedDefinition: (SampleProject.File, UInt, UInt),
+                                  expectedPaths: [(SampleProject.File, UInt, UInt)],
+                                  file: StaticString = #file, line: UInt = #line) throws
     {
-        let result = try self.engine.execute(.init(usr: usr, role: role))
-
-        print("def", result.definition.location, result.definition.roles, result.definition.symbol.kind)
-        result.occurrences.enumerated().forEach { (i, o) in
-            print(i, o.location, o.roles)
-        }
+        let result = try self.engine.execute(
+            .init(
+                usr: .query(symbol: symbolName, isSystem: false, strictSymbolLookup: false),
+                role: role
+            )
+        )
 
         XCTAssertEqual(
             result.definition.locationString,
@@ -33,21 +33,6 @@ final class ClueTests: XCTestCase {
         XCTAssertEqual(
             Set(result.occurrences.map { $0.locationString }),
             Set(expectedPaths.map { "\($0.path):\($1):\($2)" }),
-            file: file,
-            line: line
-        )
-    }
-
-    static func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
-                                  expectedDefinition: (SampleProject.File, UInt, UInt),
-                                  expectedPaths: [(SampleProject.File, UInt, UInt)],
-                                  file: StaticString = #file, line: UInt = #line) throws
-    {
-        try self.verifyQuery(
-            usr: .query(symbol: symbolName, isSystem: false, strictSymbolLookup: false),
-            role: role,
-            expectedDefinition: expectedDefinition,
-            expectedPaths: expectedPaths,
             file: file,
             line: line
         )
