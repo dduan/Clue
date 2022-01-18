@@ -43,3 +43,90 @@ extension SymbolRole {
         }
     }
 }
+
+extension SymbolRole {
+    static var allCases: [SymbolRole] {
+        [
+            .declaration,
+            .definition,
+            .reference,
+            .read,
+            .write,
+            .call,
+            .dynamic,
+            .addressOf,
+            .implicit,
+            .childOf,
+            .baseOf,
+            .overrideOf,
+            .receivedBy,
+            .calledBy,
+            .extendedBy,
+            .accessorOf,
+            .containedBy,
+            .ibTypeOf,
+            .specializationOf,
+            .canonical,
+        ]
+    }
+}
+
+extension SymbolRole {
+    private var singleRoleDescription: String {
+        switch self.rawValue {
+        case SymbolRole.declaration.rawValue:
+            return "declaration"
+        case SymbolRole.definition.rawValue:
+            return "definition"
+        case SymbolRole.reference.rawValue:
+            return "reference"
+        case SymbolRole.read.rawValue:
+            return "read"
+        case SymbolRole.write.rawValue:
+            return "write"
+        case SymbolRole.call.rawValue:
+            return "call"
+        case SymbolRole.dynamic.rawValue:
+            return "dynamic"
+        case SymbolRole.addressOf.rawValue:
+            return "addressOf"
+        case SymbolRole.implicit.rawValue:
+            return "implicit"
+        case SymbolRole.childOf.rawValue:
+            return "childOf"
+        case SymbolRole.baseOf.rawValue:
+            return "baseOf"
+        case SymbolRole.overrideOf.rawValue:
+            return "overrideOf"
+        case SymbolRole.receivedBy.rawValue:
+            return "receivedBy"
+        case SymbolRole.calledBy.rawValue:
+            return "calledBy"
+        case SymbolRole.extendedBy.rawValue:
+            return "extendedBy"
+        case SymbolRole.accessorOf.rawValue:
+            return "accessorOf"
+        case SymbolRole.containedBy.rawValue:
+            return "containedBy"
+        case SymbolRole.ibTypeOf.rawValue:
+            return "ibTypeOf"
+        case SymbolRole.specializationOf.rawValue:
+            return "specializationOf"
+        case SymbolRole.canonical.rawValue:
+            return "canonical"
+        default:
+            return "unknown"
+        }
+
+    }
+
+    var description: String {
+        var result = [String]()
+        for role in Self.allCases {
+            if self.contains(role) {
+                result.append(role.singleRoleDescription)
+            }
+        }
+        return result.joined(separator: ", ")
+    }
+}
