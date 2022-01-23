@@ -11,13 +11,14 @@ define build
 	@cp .build/$(1)/clue-cli .build/$(1)/clue
 endef
 
-.PHONY: test
-test:
-	@swift test ${EXTRA_SWIFT_FLAGS}
-
 .PHONY: build
 build:
 	$(call build,release)
+
+
+.PHONY: test
+test:
+	@swift test ${EXTRA_SWIFT_FLAGS}
 
 .PHONY: debug
 debug:
