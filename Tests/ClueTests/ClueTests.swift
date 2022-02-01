@@ -9,7 +9,7 @@ final class ClueTests: XCTestCase {
         try! SampleProject.prepareFixture()
         self.engine = try! ClueEngine(
             libIndexStorePath: libIndexStore,
-            .swiftpm(path: "\(SampleProject.samplePath)")
+            storeLocation: .inferFromSwiftPMProject(atPath: "\(SampleProject.samplePath)")
         )
     }
 

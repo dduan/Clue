@@ -14,13 +14,3 @@ func bail(_ message: String) -> Never {
     fputs(message, stderr)
     exit(EXIT_FAILURE)
 }
-
-extension Result {
-    var error: Failure? {
-        if case .failure(let failure) = self {
-            return failure
-        }
-
-        return nil
-    }
-}

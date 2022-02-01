@@ -5,22 +5,22 @@ import Pathos
 public enum StoreLocation {
     /// Name of an Xcode project.
     /// Will look for index store in `~/Library/Developer/Xcode/DerivedData/NAME.+/Index/DataStore`
-    case xcode(projectName: String)
+    case inferFromXcodeProject(named: String)
 
     /// Path to an SwiftPM project.
     /// Will look for index store in `PATH/.build/debug/index/store`
-    case swiftpm(path: String)
+    case inferFromSwiftPMProject(atPath: String)
 
     /// Precise path to an index store.
-    case store(path: String)
+    case path(String)
 }
 
 extension StoreLocation {
     func resolveIndexStorePath() throws -> String {
         switch self {
-        case .store(path: let path):
+        case .path(let path):
             return path
-        case .xcode(projectName: let name):
+        case .inferFromXcodeProject(named: let name):
             let derivedDataPath = Path
                 .home()
                 .joined(with: "Library", "Developer", "Xcode", "DerivedData", "\(name)*")
@@ -38,7 +38,7 @@ extension StoreLocation {
             }
 
             return potentialCandiates[0].joined(with: "Index", "DataStore").description
-        case .swiftpm(path: let pathString):
+        case .inferFromSwiftPMProject(atPath: let pathString):
             let project = Path(pathString)
             guard project.exists(followSymlink: true) else {
                 throw StoreInitializationError.swiftpmDoesNotExist(at: pathString)

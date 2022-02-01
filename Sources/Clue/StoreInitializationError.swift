@@ -1,8 +1,9 @@
-public enum StoreInitializationError: Error {
+enum StoreInitializationError: Error {
     case multipleXcodeCandidates([String])
     case cannotFindXcode(at: String)
     case swiftpmDoesNotExist(at: String)
     case swiftpmWasNotBuiltInDebug(at: String)
+    case couldNotInferStoreLocation
     case filesystemError(Error)
 
     case invalidIndexStore
@@ -10,10 +11,10 @@ public enum StoreInitializationError: Error {
 }
 
 extension StoreInitializationError: CustomStringConvertible {
-    public var description: String {
+    var description: String {
         switch self {
         case .multipleXcodeCandidates(let candidates):
-            return "Found more than one potential match to your Xcode project. " 
+            return "Found more than one potential match to your Xcode project. "
                 + "Try again with one of the following --xcode values:\n"
                 + candidates.map { "  - \($0)" }
                     .joined(separator: "\n")
@@ -23,6 +24,8 @@ extension StoreInitializationError: CustomStringConvertible {
             return "The path \(path) does not exist."
         case .swiftpmWasNotBuiltInDebug(let path):
             return "Please build the project in debug configuration with SwiftPM: \(path)"
+        case .couldNotInferStoreLocation:
+            return "Could not guess where the index store is. Please specify with one of --store, --xcode, or --swiftpm."
         case .filesystemError(let error):
             return "Something went wrong while accessing file system. Underlying error: \(error)"
         case .invalidIndexStore:

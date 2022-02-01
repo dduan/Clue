@@ -15,20 +15,6 @@ func libIndexStorePath(from options: Options) throws -> String {
     }
 }
 
-func indexStoreLocation(from options: Options) throws -> StoreLocation {
-    guard options.store != nil || options.xcode != nil || options.swiftpm != nil else {
-        throw InputValidationError.missingStoreLocation
-    }
-
-    if let explicitStore = options.store {
-        return .store(path: explicitStore)
-    } else if let xcodeProjectName = options.xcode {
-        return .xcode(projectName: xcodeProjectName)
-    } else {
-        return .swiftpm(path: options.swiftpm!)
-    }
-}
-
 func referenceQueryRole(from options: Options) throws -> Query.Role {
     guard !(options.roleInstanceOnly && options.roleInheritanceOnly) else {
         throw InputValidationError.mutuallyExclusive("--role-reference-only", "--role-inheritance-only")
@@ -65,10 +51,10 @@ func symbolKindFrom(_ options: Options) throws -> IndexSymbolKind? {
     }
 }
 
-func usrQueryFrom(_ options: Options) throws -> Query.USR {
+func usrQuery(from options: Options) throws -> Query.USR {
     switch (options.usr, options.symbol) {
     case (nil, nil):
-        bail("Please provide either a symbol name or --usr")
+        throw InputValidationError.noSymbol
     case let (nil, .some(symbolName)):
         return .query(
             symbol: symbolName,
@@ -84,10 +70,25 @@ func usrQueryFrom(_ options: Options) throws -> Query.USR {
     }
 }
 
+func storeLocation(from options: Options) throws -> StoreLocation? {
+    switch (options.store, options.xcode, options.swiftpm) {
+    case (nil, nil, nil):
+        return nil
+    case let (.some(store), _, _):
+        return .some(.path(store))
+    case (_, .some, .some):
+        throw InputValidationError.bothXcodeAndSwiftPM
+    case let (_, .some(xcode), _):
+        return .some(.inferFromXcodeProject(named: xcode))
+    case let (_, _, .some(swiftpm)):
+        return .some(.inferFromSwiftPMProject(atPath: swiftpm))
+    }
+}
+
 extension Query {
     init(_ options: Options) throws {
         self.init(
-            usr: try usrQueryFrom(options),
+            usr: try usrQuery(from: options),
             role: try referenceQueryRole(from: options)
         )
     }
@@ -96,10 +97,9 @@ extension Query {
 func main(_ options: Options) {
     do {
         let engine = try ClueEngine(
-            libIndexStorePath: libIndexStorePath(from: options),
-            indexStoreLocation(from: options)
+            libIndexStorePath: try libIndexStorePath(from: options),
+            storeLocation: try storeLocation(from: options)
         )
-
         let result = try engine.execute(.init(options))
         print(result.description(for: options.output))
     } catch let error {
