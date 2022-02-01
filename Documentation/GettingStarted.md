@@ -12,13 +12,7 @@ To find symbol references of `XYZ` in your project, first build it with either X
 built with Xcode, run the following:
 
 ```
-clue --xcode ProjectName XYZ
-```
-
-... if you build with SwiftPM use this instead:
-
-```
-clue --swiftpm path/to/swiftpm/project XYZ
+clue XYZ
 ```
 
 You can include a module name, and/or symbol's *kind* to disambiguate multiple potential matches:
