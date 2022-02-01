@@ -80,7 +80,7 @@ public struct ClueEngine {
                 ignoreCase: false
             )
             .filter { $0.roles.contains(.definition) && $0.location.isSystem == isSystem }
-            .filter { d in module.map { d.symbol.usr.contains($0) } ?? true  }
+            .filter { d in module.map { d.location.moduleName == $0 } ?? true  }
             .filter { d in kind.map { d.symbol.kind == $0 } ?? true }
         if candidates.count > 1 {
             throw Failure.ambiguousSymbol(candidates)
