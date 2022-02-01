@@ -20,7 +20,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            from: "1.0.2"
+            from: "1.0.3"
         ),
         .package(
             url: "https://github.com/mxcl/Chalk",
