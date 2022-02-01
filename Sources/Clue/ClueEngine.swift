@@ -6,7 +6,7 @@ public struct ClueEngine {
     let libPath: String
     let storePath: String
     /// - throws: StoreInitializationError
-    public init(libIndexStorePath: String? = nil, _ storeLocation: StoreLocation) throws {
+    public init(libIndexStorePath: String? = nil, storeLocation: StoreLocation? = nil) throws {
         do {
             self.libPath = try libIndexStorePath ?? defaultPathToLibIndexStore()
         } catch let error {
@@ -20,7 +20,7 @@ public struct ClueEngine {
             throw StoreInitializationError.invalidLibIndexStore(libPath, error)
         }
 
-        let storePath = try storeLocation.resolveIndexStorePath()
+        let storePath = try (storeLocation ?? Self.inferStoreLocation()).resolveIndexStorePath()
         var tempPath: String = ""
         do {
             tempPath = (try Path.makeTemporaryDirectory()).description
@@ -63,7 +63,7 @@ public struct ClueEngine {
     }
 
 
-    /// Find occurence for a definition associated with the symbolName, module, and kind.
+    /// Find occurrence for a definition associated with the symbolName, module, and kind.
     func inferReferenceQuerySymbol(
         symbolName: String,
         module: String?,
@@ -113,5 +113,25 @@ public struct ClueEngine {
         }
 
         return definition
+    }
+
+    static func inferStoreLocation() throws -> StoreLocation {
+        do {
+            if let workspace = (try Path("*.xcworkspace").glob()).first {
+                return .inferFromXcodeProject(named: workspace.base.description)
+            }
+
+            if let xcodeproj = (try Path("*.xcodeproj").glob()).first {
+                return .inferFromXcodeProject(named: xcodeproj.base.description)
+            }
+
+            if Path("Package.swift").exists() {
+                return .inferFromSwiftPMProject(atPath: "./")
+            }
+        } catch let error {
+            throw StoreInitializationError.filesystemError(error)
+        }
+
+        throw StoreInitializationError.couldNotInferStoreLocation
     }
 }

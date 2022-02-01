@@ -1,4 +1,6 @@
 enum InputValidationError: Error {
+    case bothXcodeAndSwiftPM
+    case noSymbol
     case couldNotInferLibIndexPath
     case missingStoreLocation
     case mutuallyExclusive(String, String)
@@ -9,6 +11,10 @@ enum InputValidationError: Error {
 extension InputValidationError: CustomStringConvertible {
     var description: String {
         switch self {
+        case .bothXcodeAndSwiftPM:
+            return "Please provide one of --swiftpm, or --xcode, not both."
+        case .noSymbol:
+            return "Please provide either a symbol name or --usr"
         case .couldNotInferLibIndexPath:
             return "Failed searching for Swift toolchain. Please provide value for --lib"
         case .missingStoreLocation:
