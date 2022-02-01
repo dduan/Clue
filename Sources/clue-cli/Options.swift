@@ -28,8 +28,8 @@ struct Options: ParsableCommand {
 
     @Option(
         help: ArgumentHelp(
-            "Clue will attempt to infer the location of the index store from the project's devired data. Alternatively, use --swiftpm if you build with SwiftPM command-line; use --store to specify the precise location of your index store.",
-            valueName: "Name of a project built with Xcode."
+            "Clue will attempt to infer the location of the index store from the project's derived data. Use the  Alternatively, use --swiftpm if you build with SwiftPM command-line; use --store to specify the precise location of your index store.",
+            valueName: "Path to Xcode's .xcodeproj or .xcworkspace"
         )
     )
     var xcode: String?
