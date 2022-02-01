@@ -118,11 +118,11 @@ public struct ClueEngine {
     static func inferStoreLocation() throws -> StoreLocation {
         do {
             if let workspace = (try Path("*.xcworkspace").glob()).first {
-                return .inferFromXcodeProject(named: workspace.base.description)
+                return .inferFromXcodeProject(atPath: workspace.description)
             }
 
             if let xcodeproj = (try Path("*.xcodeproj").glob()).first {
-                return .inferFromXcodeProject(named: xcodeproj.base.description)
+                return .inferFromXcodeProject(atPath: xcodeproj.description)
             }
 
             if Path("Package.swift").exists() {

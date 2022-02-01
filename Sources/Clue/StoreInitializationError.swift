@@ -4,6 +4,9 @@ enum StoreInitializationError: Error {
     case swiftpmDoesNotExist(at: String)
     case swiftpmWasNotBuiltInDebug(at: String)
     case couldNotInferStoreLocation
+    case couldNotFindSchemeInXcodeWorkspace(String)
+    case couldNotFindIndexStorePathFromXcode(String)
+    case invalidXcodeInput
     case filesystemError(Error)
 
     case invalidIndexStore
@@ -26,6 +29,12 @@ extension StoreInitializationError: CustomStringConvertible {
             return "Please build the project in debug configuration with SwiftPM: \(path)"
         case .couldNotInferStoreLocation:
             return "Could not guess where the index store is. Please specify with one of --store, --xcode, or --swiftpm."
+        case .couldNotFindSchemeInXcodeWorkspace(let workspace):
+            return "Could not figure out a scheme from Xcode workspace \(workspace) while inferring index store location."
+        case .couldNotFindIndexStorePathFromXcode(let path):
+            return "Could not figure out index store location based on \(path)"
+        case .invalidXcodeInput:
+            return "Could not infer index store. Please specify --xcode with an .xcodeproj or .xcworkspace"
         case .filesystemError(let error):
             return "Something went wrong while accessing file system. Underlying error: \(error)"
         case .invalidIndexStore:

@@ -79,7 +79,7 @@ func storeLocation(from options: Options) throws -> StoreLocation? {
     case (_, .some, .some):
         throw InputValidationError.bothXcodeAndSwiftPM
     case let (_, .some(xcode), _):
-        return .some(.inferFromXcodeProject(named: xcode))
+        return .some(.inferFromXcodeProject(atPath: xcode))
     case let (_, _, .some(swiftpm)):
         return .some(.inferFromSwiftPMProject(atPath: swiftpm))
     }
