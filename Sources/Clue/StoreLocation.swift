@@ -73,7 +73,7 @@ extension StoreLocation {
         let settingsOutput = String(data: settingsOutputData, encoding: .utf8)
         guard let buildDirParts = settingsOutput?
                 .split(separator: "\n")
-                .first { $0.starts(with: "    BUILD_DIR =") }?
+                .first(where: { $0.starts(with: "    BUILD_DIR =") })?
                 .split(separator: " ", omittingEmptySubsequences: true),
             buildDirParts.count == 3,
             case let buildDir = buildDirParts[2],

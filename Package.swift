@@ -12,7 +12,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/indexstore-db",
-            .revision("swift-5.5.2-RELEASE")
+            .revision("swift-5.6-RELEASE")
         ),
         .package(
             url: "https://github.com/dduan/Pathos",
@@ -20,7 +20,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            from: "1.0.3"
+            from: "1.1.1"
         ),
         .package(
             url: "https://github.com/mxcl/Chalk",
