@@ -45,6 +45,15 @@
           "revision": "82905286cc3f0fa8adc4674bf49437cab65a8373",
           "version": "1.1.1"
         }
+      },
+      {
+        "package": "swift-system-exit",
+        "repositoryURL": "https://github.com/dduan/swift-system-exit",
+        "state": {
+          "branch": null,
+          "revision": "c48e8325ba0b44e88fa65062aabcdcb3b93485aa",
+          "version": "1.0.0"
+        }
       }
     ]
   },
