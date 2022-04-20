@@ -11,6 +11,10 @@ let package = Package(
     ],
     dependencies: [
         .package(
+            url: "https://github.com/dduan/swift-system-exit",
+            from: "1.0.0"
+        ),
+        .package(
             url: "https://github.com/apple/indexstore-db",
             .revision("swift-5.6-RELEASE")
         ),
@@ -39,6 +43,7 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Chalk", package: "Chalk"),
                 .product(name: "IsTTY", package: "IsTTY"),
+                .product(name: "SystemExit", package: "swift-system-exit"),
             ]
         ),
         .target(
