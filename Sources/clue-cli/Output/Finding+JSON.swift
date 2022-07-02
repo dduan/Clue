@@ -25,7 +25,7 @@ extension Finding: Encodable {
     }
 }
 
-extension Query: Encodable {
+extension ReferenceQuery: Encodable {
     enum CodingKeys: String, CodingKey {
         case usr, role
     }
@@ -37,7 +37,7 @@ extension Query: Encodable {
     }
 }
 
-extension Query.USR: Encodable {
+extension ReferenceQuery.USR: Encodable {
     enum CodingKeys: String, CodingKey {
         case type, value, symbol, module, kind, isSystem, strictSymbolLookup
     }
@@ -63,7 +63,7 @@ extension Query.USR: Encodable {
     }
 }
 
-extension Query.Role: Encodable {
+extension ReferenceQuery.Role: Encodable {
     enum CodingKeys: String, CodingKey {
         case include, exclude
     }

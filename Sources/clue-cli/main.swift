@@ -15,7 +15,7 @@ func libIndexStorePath(from options: Options) throws -> String {
     }
 }
 
-func referenceQueryRole(from options: Options) throws -> Query.Role {
+func referenceQueryRole(from options: Options) throws -> ReferenceQuery.Role {
     guard !(options.roleInstanceOnly && options.roleInheritanceOnly) else {
         throw InputValidationError.mutuallyExclusive("--role-reference-only", "--role-inheritance-only")
     }
@@ -51,7 +51,7 @@ func symbolKindFrom(_ options: Options) throws -> IndexSymbolKind? {
     }
 }
 
-func usrQuery(from options: Options) throws -> Query.USR {
+func usrQuery(from options: Options) throws -> ReferenceQuery.USR {
     switch (options.usr, options.symbol) {
     case (nil, nil):
         throw InputValidationError.noSymbol
@@ -85,7 +85,7 @@ func storeLocation(from options: Options) throws -> StoreLocation? {
     }
 }
 
-extension Query {
+extension ReferenceQuery {
     init(_ options: Options) throws {
         self.init(
             usr: try usrQuery(from: options),
@@ -100,7 +100,7 @@ func main(_ options: Options) {
             libIndexStorePath: try libIndexStorePath(from: options),
             storeLocation: try storeLocation(from: options)
         )
-        let result = try engine.execute(.init(options))
+        let result = try engine.execute(.find(.init(options)))
         print(result.description(for: options.output))
     } catch let error {
         bail("\(error)")

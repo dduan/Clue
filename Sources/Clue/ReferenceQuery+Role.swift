@@ -1,6 +1,6 @@
 import IndexStoreDB
 
-extension Query {
+extension ReferenceQuery {
     public enum Role {
         public enum Preset {
             case instanceOnly
@@ -12,11 +12,11 @@ extension Query {
     }
 }
 
-extension Query.Role {
+extension ReferenceQuery.Role {
     static var empty: Self { .specific() }
 }
 
-extension Query.Role {
+extension ReferenceQuery.Role {
     public var inclusive: SymbolRole {
         switch self {
         case .preset(.instanceOnly):
