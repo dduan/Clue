@@ -1,6 +1,6 @@
 import IndexStoreDB
 
-extension Query {
+extension ReferenceQuery {
     /// Information that help pinning down one or more USRs
     public enum USR {
         case explict(usr: String)

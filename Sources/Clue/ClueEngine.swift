@@ -43,23 +43,26 @@ public struct ClueEngine {
     }
 
     public func execute(_ query: Query) throws -> Finding {
-        let role = Query.Role.specific(
-            role: query.role.inclusive.isEmpty ? .all : query.role.inclusive,
-            exclusiveRole: query.role.exclusive
-        )
+        switch query {
+        case .find(let query):
+            let role = ReferenceQuery.Role.specific(
+                role: query.role.inclusive.isEmpty ? .all : query.role.inclusive,
+                exclusiveRole: query.role.exclusive
+            )
 
-        let definition = try self.findDefinition(from: query.usr)
-        let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.inclusive)
-            .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
-            .filter { $0.roles.isDisjoint(with: role.exclusive.union(.definition)) }
+            let definition = try self.findDefinition(from: query.usr)
+            let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.inclusive)
+                .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
+                .filter { $0.roles.isDisjoint(with: role.exclusive.union(.definition)) }
 
-        return .init(
-            libIndexStore: self.libPath,
-            storeLocation: self.storePath,
-            query: .init(usr: query.usr, role: role),
-            definition: definition,
-            occurrences: result
-        )
+            return .init(
+                libIndexStore: self.libPath,
+                storeLocation: self.storePath,
+                query: .init(usr: query.usr, role: role),
+                definition: definition,
+                occurrences: result
+            )
+        }
     }
 
 
@@ -92,7 +95,7 @@ public struct ClueEngine {
     }
 
     /// Return a definition for the given USR query
-    func findDefinition(from query: Query.USR) throws -> SymbolOccurrence {
+    func findDefinition(from query: ReferenceQuery.USR) throws -> SymbolOccurrence {
         let definition: SymbolOccurrence
         switch query {
         case .explict(let usr):
