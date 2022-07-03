@@ -26,7 +26,7 @@ So, what's Clue good for? Here's some ideas:
 * Build general purpose refactor tools with finding the symbols being its first step.
 * Help you self navigate complex projects.
 
-## Technical Overview
+## Technical Overview Of the "find" Subcommand
 
 This is the most important portion of this guide: we'll discuss how Clue works behind the scenes. Clue
 deliberately exposes all of its mechanism so that users always have ways to intervene when unexpected things
@@ -151,5 +151,3 @@ Clue takes a inclusive list of roles, and a list of roles to exclude. Both are o
 are included, and none excluded.
 
 Congratulations, you've found all the symbol references from your project, no less, no more!
-
-

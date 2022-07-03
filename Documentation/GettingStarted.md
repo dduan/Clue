@@ -8,11 +8,11 @@
 
 ## Command-line Usage
 
-To find symbol references of `XYZ` in your project, first build it with either Xcode, or SwiftPM. If it's
+To **find** symbol references of `XYZ` in your project, first build it with either Xcode, or SwiftPM. If it's
 built with Xcode, run the following:
 
 ```
-clue XYZ
+clue find XYZ
 ```
 
 You can include a module name, and/or symbol's *kind* to disambiguate multiple potential matches:
@@ -20,7 +20,15 @@ You can include a module name, and/or symbol's *kind* to disambiguate multiple p
 ```
 # look for references of protocol `XYZ` in module `XYZModule`
 
-clue --swiftpm path/to/swiftpm/project XYZ --module XYZModule --kind protocol ```
+clue find --swiftpm path/to/swiftpm/project XYZ --module XYZModule --kind protocol
+```
+
+You can also **dump** all symbols defined in a module of certain kinds:
+
+```
+# look for enums defined in module `in module `XYZModule`, output in JSON format
+
+clue dump XYZModule --kinds enum --output json
 ```
 
 For more details, read `clue --help`. Read the [Advanced User Guide][] more in-depth discussion on how
