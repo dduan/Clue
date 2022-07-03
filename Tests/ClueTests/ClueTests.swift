@@ -13,7 +13,7 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    static func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
+    static func verifySimpleQuery(symbolName: String, role: ReferenceQuery.Role = .empty,
                                   expectedDefinition: (SampleProject.File, UInt, UInt),
                                   expectedPaths: [(SampleProject.File, UInt, UInt)],
                                   file: StaticString = #file, line: UInt = #line) throws
