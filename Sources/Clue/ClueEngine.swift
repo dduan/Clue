@@ -58,9 +58,32 @@ public struct ClueEngine {
             return .init(
                 libIndexStore: self.libPath,
                 storeLocation: self.storePath,
-                query: .init(usr: query.usr, role: role),
-                definition: definition,
-                occurrences: result
+                details: .find(
+                    query: .init(usr: query.usr, role: role),
+                    definition: definition,
+                    occurrences: result
+                )
+            )
+        case .dump(let query):
+            let kinds = query.kinds.isEmpty ? IndexSymbolKind.allCases : query.kinds
+            print(kinds)
+            let definitions = self.db.canonicalOccurrences(
+                containing: "",
+                anchorStart: true,
+                anchorEnd: false,
+                subsequence: false,
+                ignoreCase: false
+            )
+            .filter { $0.roles.contains(.definition) }
+            .filter { $0.location.moduleName == query.name }
+            .filter { kinds.contains($0.symbol.kind) }
+            return .init(
+                libIndexStore: self.libPath,
+                storeLocation: self.storePath,
+                details: .dump(
+                    query: query,
+                    definitions: definitions
+                )
             )
         }
     }
@@ -99,7 +122,7 @@ public struct ClueEngine {
         let definition: SymbolOccurrence
         switch query {
         case .explict(let usr):
-            let candidates = db.occurrences(ofUSR: usr, roles: .definition)
+            let candidates = self.db.occurrences(ofUSR: usr, roles: .definition)
             guard !candidates.isEmpty else {
                 throw Failure.symbolNotFoundByUSR(usr)
             }

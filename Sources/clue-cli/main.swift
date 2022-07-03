@@ -1,9 +1,7 @@
 import Clue
 import IndexStoreDB
 
-let options = Options.parseOrExit()
-
-func libIndexStorePath(from options: Options) throws -> String {
+func libIndexStorePath(from options: CommonOptions) throws -> String {
     if let lib = options.lib {
         return lib
     } else {
@@ -15,7 +13,7 @@ func libIndexStorePath(from options: Options) throws -> String {
     }
 }
 
-func referenceQueryRole(from options: Options) throws -> ReferenceQuery.Role {
+func referenceQueryRole(from options: CLI.Find) throws -> ReferenceQuery.Role {
     guard !(options.roleInstanceOnly && options.roleInheritanceOnly) else {
         throw InputValidationError.mutuallyExclusive("--role-reference-only", "--role-inheritance-only")
     }
@@ -39,7 +37,7 @@ func referenceQueryRole(from options: Options) throws -> ReferenceQuery.Role {
     }
 }
 
-func symbolKindFrom(_ options: Options) throws -> IndexSymbolKind? {
+func symbolKindFrom(_ options: CLI.Find) throws -> IndexSymbolKind? {
     if let kindString = options.symbolKind {
         guard let kind = IndexSymbolKind(kindString) else {
             throw InputValidationError.invalidValues("--symbol-kind", [kindString])
@@ -51,7 +49,7 @@ func symbolKindFrom(_ options: Options) throws -> IndexSymbolKind? {
     }
 }
 
-func usrQuery(from options: Options) throws -> ReferenceQuery.USR {
+func usrQuery(from options: CLI.Find) throws -> ReferenceQuery.USR {
     switch (options.usr, options.symbol) {
     case (nil, nil):
         throw InputValidationError.noSymbol
@@ -70,7 +68,7 @@ func usrQuery(from options: Options) throws -> ReferenceQuery.USR {
     }
 }
 
-func storeLocation(from options: Options) throws -> StoreLocation? {
+func storeLocation(from options: CommonOptions) throws -> StoreLocation? {
     switch (options.store, options.xcode, options.swiftpm) {
     case (nil, nil, nil):
         return nil
@@ -86,7 +84,7 @@ func storeLocation(from options: Options) throws -> StoreLocation? {
 }
 
 extension ReferenceQuery {
-    init(_ options: Options) throws {
+    init(_ options: CLI.Find) throws {
         self.init(
             usr: try usrQuery(from: options),
             role: try referenceQueryRole(from: options)
@@ -94,17 +92,36 @@ extension ReferenceQuery {
     }
 }
 
-func main(_ options: Options) {
-    do {
-        let engine = try ClueEngine(
-            libIndexStorePath: try libIndexStorePath(from: options),
-            storeLocation: try storeLocation(from: options)
+func moduleQueryKind(from options: CLI.Dump) throws -> [IndexSymbolKind] { [] }
+
+extension ModuleQuery {
+    init(_ options: CLI.Dump) throws {
+        self.init(
+            name: options.module,
+            kinds: options.kinds
         )
-        let result = try engine.execute(.find(.init(options)))
-        print(result.description(for: options.output))
-    } catch let error {
-        bail("\(error)")
     }
 }
 
-main(options)
+do {
+    var parsed = try CLI.parseAsRoot()
+    if let options = parsed as? CLI.Find {
+        let engine = try ClueEngine(
+            libIndexStorePath: try libIndexStorePath(from: options.common),
+            storeLocation: try storeLocation(from: options.common)
+        )
+        let result = try engine.execute(.find(.init(options)))
+        print(result.description(for: options.common.output))
+    } else if let options = parsed as? CLI.Dump {
+        let engine = try ClueEngine(
+            libIndexStorePath: try libIndexStorePath(from: options.common),
+            storeLocation: try storeLocation(from: options.common)
+        )
+        let result = try engine.execute(.dump(.init(options)))
+        print(result.description(for: options.common.output))
+    } else {
+        try parsed.run()
+    }
+} catch let error {
+    CLI.exit(withError: error)
+}

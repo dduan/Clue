@@ -13,7 +13,7 @@ final class ClueTests: XCTestCase {
         )
     }
 
-    static func verifySimpleQuery(symbolName: String, role: ReferenceQuery.Role = .empty,
+    static func verifySimpleQuery(symbolName: String, role: Query.Role = .empty,
                                   expectedDefinition: (SampleProject.File, UInt, UInt),
                                   expectedPaths: [(SampleProject.File, UInt, UInt)],
                                   file: StaticString = #file, line: UInt = #line) throws
@@ -27,13 +27,18 @@ final class ClueTests: XCTestCase {
             )
         )
 
+        guard case Finding.Details.find(_, let definition, let occurrences) = result.details else {
+            XCTFail("Expected references result")
+            return
+        }
+
         XCTAssertEqual(
-            result.definition.locationString,
+            definition.locationString,
             "\(expectedDefinition.0.path):\(expectedDefinition.1):\(expectedDefinition.2)"
         )
 
         XCTAssertEqual(
-            Set(result.occurrences.map { $0.locationString }),
+            Set(occurrences.map { $0.locationString }),
             Set(expectedPaths.map { "\($0.path):\($1):\($2)" }),
             file: file,
             line: line
