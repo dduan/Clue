@@ -35,7 +35,7 @@ struct CommonOptions: ParsableArguments {
     var swiftpm: String?
 
 
-    @Option(help: "Output format. By default (automatic), the output is 'colored' for terminals, and 'readable' for non-terminal. Valid options are: automatic, readable, colored, json, csv, files.")
+    @Option(help: "Output format. By default (automatic), the output is 'colored' for terminals, and 'readable' for non-terminal. Valid options are: \(OutputFormat.allCases.map { "\($0)" }.joined(separator: ", ")).")
     var output: OutputFormat = .automatic
 }
 
@@ -85,7 +85,7 @@ extension CLI {
         @Argument(help: "Name of the module.")
         var module: String
 
-        @Option(help: "Filter results references by including these roles. Valid roles are: \(IndexSymbolKind.allCases.map { $0.description }.joined(separator: ", ")). (default: all)")
+        @Option(help: "Filter results definitions by including these kinds. Valid kinds are: \(IndexSymbolKind.allCases.map { $0.description }.joined(separator: ", ")). (default: all)")
         var kinds: [IndexSymbolKind] = []
     }
 }

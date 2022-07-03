@@ -12,6 +12,8 @@ extension Finding {
             return self.readableOutput(colored: true)
         case .csv:
             return self.csv()
+        case .tsv:
+            return self.tsv()
         case .json:
             return self.json()
         case .files:
