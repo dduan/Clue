@@ -66,7 +66,6 @@ public struct ClueEngine {
             )
         case .dump(let query):
             let kinds = query.kinds.isEmpty ? IndexSymbolKind.allCases : query.kinds
-            print(kinds)
             let definitions = self.db.canonicalOccurrences(
                 containing: "",
                 anchorStart: true,

@@ -12,7 +12,7 @@ extension Finding {
 
 extension Finding: Encodable {
     enum CodingKeys: String, CodingKey {
-        case libIndexStore, storeLocation, query, definition, occurrences
+        case libIndexStore, storeLocation, query, definition, occurrences, definitions
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -24,9 +24,21 @@ extension Finding: Encodable {
             try values.encode(query, forKey: .query)
             try values.encode(definition, forKey: .definition)
             try values.encode(occurrences, forKey: .occurrences)
-        case .dump:
-            fatalError("implement me") // TODO
+        case let .dump(query, definitions):
+            try values.encode(query, forKey: .query)
+            try values.encode(definitions, forKey: .definitions)
         }
+    }
+}
+
+extension ModuleQuery: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case moduleName, kinds
+    }
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(self.name, forKey: .moduleName)
+        try values.encode(self.kinds, forKey: .kinds)
     }
 }
 
@@ -82,6 +94,13 @@ extension ReferenceQuery.Role: Encodable {
         }
 
         try values.encode("\(self.exclusive)", forKey: .exclude)
+    }
+}
+
+extension IndexSymbolKind: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var value = encoder.singleValueContainer()
+        try value.encode(self.description)
     }
 }
 
