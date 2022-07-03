@@ -1,7 +1,7 @@
 import IndexStoreDB
 public struct ModuleQuery {
-    let name: String
-    let kinds: [IndexSymbolKind]
+    public let name: String
+    public let kinds: [IndexSymbolKind]
 
     public init(name: String, kinds: [IndexSymbolKind]) {
         self.name = name
