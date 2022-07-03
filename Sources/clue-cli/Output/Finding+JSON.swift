@@ -19,9 +19,14 @@ extension Finding: Encodable {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(self.libIndexStore, forKey: .libIndexStore)
         try values.encode(self.storeLocation, forKey: .storeLocation)
-        try values.encode(self.query, forKey: .query)
-        try values.encode(self.definition, forKey: .definition)
-        try values.encode(self.occurrences, forKey: .occurrences)
+        switch self.details {
+        case let .find(query, definition, occurrences):
+            try values.encode(query, forKey: .query)
+            try values.encode(definition, forKey: .definition)
+            try values.encode(occurrences, forKey: .occurrences)
+        case .dump:
+            fatalError("implement me") // TODO
+        }
     }
 }
 
