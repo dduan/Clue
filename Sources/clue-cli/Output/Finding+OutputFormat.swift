@@ -2,7 +2,7 @@ import Clue
 import IsTTY
 
 extension Finding {
-    func description(for format: OutputFormat) -> String {
+    func description(for format: OutputFormat, includeHeader: Bool) -> String {
         switch format {
         case .automatic:
             return self.readableOutput(colored: IsTTY.standardOutput)
@@ -11,9 +11,9 @@ extension Finding {
         case .colored:
             return self.readableOutput(colored: true)
         case .csv:
-            return self.csv()
+            return self.csv(includeHeader: includeHeader)
         case .tsv:
-            return self.tsv()
+            return self.tsv(includeHeader: includeHeader)
         case .json:
             return self.json()
         case .files:

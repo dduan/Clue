@@ -2,7 +2,7 @@ import Clue
 import IndexStoreDB
 
 extension Finding {
-    private func format(_ occurrences: [SymbolOccurrence], valueSeparator: String) -> String {
+    private func format(_ occurrences: [SymbolOccurrence], valueSeparator: String, addHeader: Bool) -> String {
         let header = ["name", "usr", "kind", "roles", "path", "line", "column", "moduleName", "isSystem"]
         let content = occurrences
             .map { (occur: SymbolOccurrence) -> [String] in
@@ -19,28 +19,28 @@ extension Finding {
                 ]
             }
 
-        return ([header] + content)
+        return ((addHeader ? [header] : []) + content)
             .map { $0.joined(separator: valueSeparator) }
             .joined(separator: "\n")
     }
 
-    func csv() -> String {
+    func csv(includeHeader: Bool) -> String {
         let separator = ","
         switch self.details {
         case .find(_, _, let occurrences):
-            return format(occurrences, valueSeparator: separator)
+            return format(occurrences, valueSeparator: separator, addHeader: includeHeader)
         case .dump(_, let definitions):
-            return format(definitions, valueSeparator: separator)
+            return format(definitions, valueSeparator: separator, addHeader: includeHeader)
         }
     }
 
-    func tsv() -> String {
+    func tsv(includeHeader: Bool) -> String {
         let separator = "\t"
         switch self.details {
         case .find(_, _, let occurrences):
-            return format(occurrences, valueSeparator: separator)
+            return format(occurrences, valueSeparator: separator, addHeader: includeHeader)
         case .dump(_, let definitions):
-            return format(definitions, valueSeparator: separator)
+            return format(definitions, valueSeparator: separator, addHeader: includeHeader)
         }
     }
 }
