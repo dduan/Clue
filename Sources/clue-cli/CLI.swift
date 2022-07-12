@@ -37,6 +37,9 @@ struct CommonOptions: ParsableArguments {
 
     @Option(help: "Output format. By default (automatic), the output is 'colored' for terminals, and 'readable' for non-terminal. Valid options are: \(OutputFormat.allCases.map { "\($0)" }.joined(separator: ", ")).")
     var output: OutputFormat = .automatic
+
+    @Flag(help: "Include headers in TSV or CSV output format")
+    var outputHeader: Bool = false
 }
 
 extension CLI {

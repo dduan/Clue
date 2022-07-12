@@ -111,14 +111,14 @@ do {
             storeLocation: try storeLocation(from: options.common)
         )
         let result = try engine.execute(.find(.init(options)))
-        print(result.description(for: options.common.output))
+        print(result.description(for: options.common.output, includeHeader: options.common.outputHeader))
     } else if let options = parsed as? CLI.Dump {
         let engine = try ClueEngine(
             libIndexStorePath: try libIndexStorePath(from: options.common),
             storeLocation: try storeLocation(from: options.common)
         )
         let result = try engine.execute(.dump(.init(options)))
-        print(result.description(for: options.common.output))
+        print(result.description(for: options.common.output, includeHeader: options.common.outputHeader))
     } else {
         try parsed.run()
     }
