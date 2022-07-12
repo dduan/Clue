@@ -127,6 +127,6 @@ extension SymbolRole {
                 result.append(role.singleRoleDescription)
             }
         }
-        return result.joined(separator: ", ")
+        return result.joined(separator: "|")
     }
 }
