@@ -54,6 +54,7 @@ public struct ClueEngine {
             let result = db.occurrences(ofUSR: definition.symbol.usr, roles: role.inclusive)
                 .filter { !$0.roles.isSuperset(of: [.implicit, .definition]) }
                 .filter { $0.roles.isDisjoint(with: role.exclusive.union(.definition)) }
+                .filter { !$0.location.isSystem }
 
             return .init(
                 libIndexStore: self.libPath,
@@ -120,8 +121,9 @@ public struct ClueEngine {
     func findDefinition(from query: ReferenceQuery.USR) throws -> SymbolOccurrence {
         let definition: SymbolOccurrence
         switch query {
-        case .explict(let usr):
+        case .explict(let usr, let isSystem):
             let candidates = self.db.occurrences(ofUSR: usr, roles: .definition)
+                .filter { $0.location.isSystem == isSystem }
             guard !candidates.isEmpty else {
                 throw Failure.symbolNotFoundByUSR(usr)
             }

@@ -62,7 +62,7 @@ func usrQuery(from options: CLI.Find) throws -> ReferenceQuery.USR {
             strictSymbolLookup: options.strictSymbolLookup
         )
     case let (.some(usr), nil):
-        return .explict(usr: usr)
+        return .explict(usr: usr, isSystem: options.isSystem)
     case _:
         throw InputValidationError.mutuallyExclusive("Symbol name", "--usr")
     }

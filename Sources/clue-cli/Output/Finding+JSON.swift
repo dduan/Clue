@@ -62,9 +62,10 @@ extension ReferenceQuery.USR: Encodable {
     public func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .explict(let usrString):
+        case .explict(let usrString, let isSystem):
             try values.encode("explict", forKey: .type)
             try values.encode(usrString, forKey: .value)
+            try values.encode(isSystem, forKey: .isSystem)
         case let .query(symbol, module, kind, isSystem, strictSymbolLookup):
             try values.encode(symbol, forKey: .symbol)
             try values.encode(isSystem, forKey: .isSystem)
